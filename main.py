@@ -47,7 +47,7 @@ class MainScreen(FloatLayout):
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
-        self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(603, 70))
+        self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(0, 980))
         self.add_widget(self.analog_display)
 
 
@@ -77,12 +77,20 @@ class MainScreen(FloatLayout):
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
         
-        
-        self.button1 = Button(text='Кнопка 1', size_hint=(.2, .1), pos_hint={'center_x': .3, 'center_y': .5})
+        self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 500) , font_name='fonts/hemi_head_bd_it.ttf')
+        self.add_widget(self.clock)
+
+        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=24, pos=(-200, 400), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
+        self.add_widget(self.servReport)
+
+
+        self.button1 = Button(text='', size_hint=(None, None), size=(192, 192), pos_hint={'center_x': .3, 'center_y': .5},
+                              background_normal='images/switch3_off.png', background_down='images/switch3.png')
         self.button1.bind(on_release=lambda instance: self.on_button_release("Message from Button 1"))
         self.add_widget(self.button1)
 
-        self.button2 = Button(text='Кнопка 2', size_hint=(.2, .1), pos_hint={'center_x': .7, 'center_y': .5})
+        self.button2 = Button(text='', size_hint=(None, None), size=(192, 192), pos_hint={'center_x': .7, 'center_y': .5},
+                              background_normal='images/switch3_off.png', background_down='images/switch3.png')
         self.button2.bind(on_release=lambda instance: self.on_button_release("Message from Button 2"))
         self.add_widget(self.button2)
 
@@ -92,14 +100,18 @@ class MainScreen(FloatLayout):
 
 
     def update_time(self):
-        print(self.gpio.pinRead(self.jigSw))
+        #print(self.gpio.pinRead(self.jigSw))
         self.analog_display.value = random.randint(0,200)
         self.gpio.pinWrite(self.okLED, random.randint(0,1))
+
+        self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
 
     def serverUdpIncomingData(self, data):
         try:
-            print(data)
+            self.servReport.text = f'[color=00ffcc]{data}[/color]'
+            #print(data)
+            pass
         except:
             print("Error in udp data")
     ##server handler CB function

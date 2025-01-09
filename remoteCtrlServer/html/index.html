@@ -4,20 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commant interface</title>
+    <title>Command interface</title>
     <link rel="stylesheet" href="styles.css">
     <script>
         function sendCommand(command) {
             const commandText = document.getElementById('commandDropdown').value;
             const slotName = document.getElementById('slotsDropdown').value;
             let url = '/cmd:';
-
             if (slotName) {
                 url += slotName + '/';
             }
-
             url += command;
-
             fetch(url)
                 .then(response => response.text())
                 .then(data => {
@@ -40,14 +37,10 @@
                     sendCommand(commandText);
                     return;
                 }
-
-
-
             } else {
                 sendCommand(commandText);
                 return;
             }
-
         }
         function onButtonClick(buttonId) {
             sendCommand(buttonId + '=pressed');
