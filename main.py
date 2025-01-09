@@ -4,6 +4,7 @@ import time
 import shlex
 import pty
 import os, socket, re
+import random
 from urllib import request
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -28,6 +29,7 @@ from remoteCtrlServer.httpserver import start_server_in_thread
 from remoteCtrlServer.udpService import UdpAsyncClient
 from pyIOdriver.i2c_gpio import  I2CGPIOController, IO, DIR, Expander
 
+from analogMeterWidget.analogGaugeWidget import analog_meter
 
 remCtrlPort = 8080
 sysI2cBus = 0
@@ -45,7 +47,10 @@ class MainScreen(FloatLayout):
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
-        
+        self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(603, 70))
+        self.add_widget(self.analog_display)
+
+
         ## GPIO controller init 
         self.gpio = I2CGPIOController(sysI2cBus)
         self.gpioExpander = Expander(Expander.PCA9535)
@@ -63,18 +68,33 @@ class MainScreen(FloatLayout):
         self.gpio.setPinDirection(self.okLED, False)
         self.gpio.setPinDirection(self.errLED, False)
         
-        
         self.gpio.startController()
+
 
         ## Server start
         self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self)
         self.udpClient = UdpAsyncClient(self, self.serverUdpIncomingData, 5005)
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
+        
+        
+        self.button1 = Button(text='Кнопка 1', size_hint=(.2, .1), pos_hint={'center_x': .3, 'center_y': .5})
+        self.button1.bind(on_release=lambda instance: self.on_button_release("Message from Button 1"))
+        self.add_widget(self.button1)
+
+        self.button2 = Button(text='Кнопка 2', size_hint=(.2, .1), pos_hint={'center_x': .7, 'center_y': .5})
+        self.button2.bind(on_release=lambda instance: self.on_button_release("Message from Button 2"))
+        self.add_widget(self.button2)
+
+    def on_button_release(self, message):
+        self.udpClient.send_text(message, udpReportService.ip, udpReportService.port)
+
 
 
     def update_time(self):
         print(self.gpio.pinRead(self.jigSw))
+        self.analog_display.value = random.randint(0,200)
+        self.gpio.pinWrite(self.okLED, random.randint(0,1))
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
 
     def serverUdpIncomingData(self, data):

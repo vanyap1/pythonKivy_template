@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Інтерфейс команд</title>
+    <title>Commant interface</title>
     <link rel="stylesheet" href="styles.css">
     <script>
         function sendCommand(command) {
@@ -24,7 +24,7 @@
                     document.getElementById('result').innerText = data;
                 })
                 .catch(error => {
-                    document.getElementById('result').innerText = 'Помилка: ' + error;
+                    document.getElementById('result').innerText = 'Error: ' + error;
                 });
         }
 
@@ -57,7 +57,7 @@
 
 <body>
     <div class="container">
-        <h1>Інтерфейс команд</h1>
+        <h1>Command interface</h1>
         <div class="input-group">
             <select id="slotsDropdown">
                 <option value="">none</option>
@@ -71,18 +71,18 @@
                 <option value="stop">stop</option>
             </select>
             <input type="text" id="commandInput" placeholder="Введіть команду">
-            <button onclick="onOkButtonClick()">OK</button>
+            <button onclick="onOkButtonClick()">EXEC</button>
         </div>
 
 
         <div class="result-group">
-            <h2>Результат:</h2>
-            <pre id="result"></pre>
+            <h2>Result:</h2>
+            <pre id="result">No data</pre>
         </div>
         <div class="button-group">
-            <button onclick="onButtonClick('btn0')">Кнопка 0</button>
-            <button onclick="onButtonClick('btn1')">Кнопка 1</button>
-            <button onclick="onButtonClick('btn2')">Кнопка 2</button>
+            <button onclick="onButtonClick('btn0')">Button 0</button>
+            <button onclick="onButtonClick('btn1')">Button 1</button>
+            <button onclick="onButtonClick('btn2')">Button 2</button>
         </div>
     </div>
 </body>
