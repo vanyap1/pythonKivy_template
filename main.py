@@ -79,7 +79,9 @@ class MainScreen(FloatLayout):
 
         ## Server start
         self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self)
-        self.udpClient = UdpAsyncClient(self, self.serverUdpIncomingData, 5005)
+        self.udpClient = UdpAsyncClient(self)
+        self.udpClient.startListener(5005, self.serverUdpIncomingData)
+        
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
         
@@ -101,20 +103,35 @@ class MainScreen(FloatLayout):
         self.add_widget(self.button2)
 
     def on_button_release(self, message):
-        self.udpClient.send_text(message, udpReportService.ip, udpReportService.port)
+        """
+        Обробляє подію відпускання кнопки та відправляє повідомлення через UDP.
+        
+        Parameters:
+        message (str): Повідомлення для відправки.
+        """
+        self.udpClient.send_data(message, udpReportService.ip, udpReportService.port)
 
 
 
     def update_time(self):
+        """
+        Оновлює значення аналогового дисплея та відправляє повідомлення через UDP.
+        """
         #print(self.gpio.pinRead(self.jigSw))
         self.analog_display.value = random.randint(0,200)
         self.gpio.pinWrite(self.okLED, random.randint(0,1))
 
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
-        print(self.backProc.getStatus())
+        #print(self.backProc.getStatus())
 
     def serverUdpIncomingData(self, data):
+        """
+        Обробляє вхідні дані UDP сервера.
+        
+        Parameters:
+        data (str): Вхідні дані.
+        """
         try:
             self.servReport.text = f'[color=00ffcc]{data}[/color]'
             #print(data)
@@ -123,6 +140,15 @@ class MainScreen(FloatLayout):
             print("Error in udp data")
     ##server handler CB function
     def remCtrlCB(self, arg):
+        """
+        Обробляє запити віддаленого керування.
+        
+        Parameters:
+        arg (str): Аргумент запиту.
+        
+        Returns:
+        str: Результат обробки запиту.
+        """
         #['', 'slot', '0', 'status']
         request = arg.lower().split("/")
         print("CB arg-", request )
@@ -137,6 +163,9 @@ class MainScreen(FloatLayout):
         return "ok" 
     
     def stop_server(self):
+        """
+        Зупиняє HTTP сервер.
+        """
         if self.server:
             self.server.shutdown()
             self.server_thread.join()

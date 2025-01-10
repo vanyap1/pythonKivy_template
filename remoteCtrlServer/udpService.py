@@ -2,8 +2,19 @@ import socket
 import json
 import threading
 
-class UdpAsyncClient(threading.Thread):
-    def __init__(self, mainLoopInstance, cbFn, port=5005, bufferSize=1024):
+"""
+Usage examle
+self.udpClient = UdpAsyncClient(self)
+self.udpClient.startListener(5005, self.serverUdpIncomingData)
+
+def serverUdpIncomingData(self, data):
+        print("UDP data-", data)
+        pass
+"""
+
+
+class UdpAsyncClient:
+    def __init__(self, mainLoopInstance, cbFn=None, port=5005, bufferSize=1024):
         self.mainLoop = mainLoopInstance
         self.parrentCb = cbFn 
         self.port = port
@@ -11,9 +22,20 @@ class UdpAsyncClient(threading.Thread):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind(('', self.port))
-        threading.Thread.__init__(self)
-        self.daemon = True
-        self.start()
+
+    def startListener(self, port, cbFunction):
+        """
+        Запускає прослуховування UDP-портів в окремому потоці.
+        
+        Parameters:
+        port (int): Порт для прослуховування.
+        cbFunction (function): Функція зворотного виклику для обробки отриманих даних.
+        """
+        self.port = port
+        self.parrentCb = cbFunction
+        self.listener_thread = threading.Thread(target=self.run)
+        self.listener_thread.daemon = True
+        self.listener_thread.start()
 
     def run(self):
         while True:
@@ -31,15 +53,18 @@ class UdpAsyncClient(threading.Thread):
                 pass
                 #self.parrentCb("err") 
     
-    def send_bytes(self, data, ip, port):
+    def send_data(self, data, ip, port):
+        """
+        Відправляє дані через UDP сокет. Автоматично визначає тип даних (рядок або байти).
+
+        Parameters:
+        data (str or bytes): Дані для відправки.
+        ip (str): IP-адреса отримувача.
+        port (int): Порт отримувача.
+        """
         try:
+            if isinstance(data, str):
+                data = data.encode('utf-8')
             self.sock.sendto(data, (ip, port))
         except Exception as e:
-            print(f"Error sending bytes: {e}")
-
-    def send_text(self, text, ip, port):
-        try:
-            data = text.encode('utf-8')
-            self.send_bytes(data, ip, port)
-        except Exception as e:
-            print(f"Error sending text: {e}")
+            print(f"Error sending data: {e}")
