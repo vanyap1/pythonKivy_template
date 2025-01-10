@@ -30,6 +30,8 @@ from remoteCtrlServer.udpService import UdpAsyncClient
 from pyIOdriver.i2c_gpio import  I2CGPIOController, IO, DIR, Expander
 
 from analogMeterWidget.analogGaugeWidget import analog_meter
+from backgroundServices.backgroundProcessor import BackgroundWorker
+
 
 remCtrlPort = 8080
 sysI2cBus = 0
@@ -44,6 +46,10 @@ class udpReportService():
 class MainScreen(FloatLayout):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
+        self.backProc = BackgroundWorker()
+        self.backProc.startProc()
+        
+        
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
@@ -106,6 +112,7 @@ class MainScreen(FloatLayout):
 
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
+        print(self.backProc.getStatus())
 
     def serverUdpIncomingData(self, data):
         try:
@@ -117,16 +124,22 @@ class MainScreen(FloatLayout):
     ##server handler CB function
     def remCtrlCB(self, arg):
         #['', 'slot', '0', 'status']
-        reguest = arg.lower().split("/")
-        print("CB arg-", reguest )
+        request = arg.lower().split("/")
+        print("CB arg-", request )
+        if(request[0] == "run"):
+            ##self.backProc.setCmd("run")
+            self.backProc.startProc()
+            return self.backProc.getStatus()
+        elif(request[0] == "stop"):
+             self.backProc.stopProc()
+             #self.backProc.setCmd("stop")
+             return self.backProc.getStatus()  
         return "ok" 
+    
     def stop_server(self):
         if self.server:
             self.server.shutdown()
             self.server_thread.join()
-
-
-
 
 class BoxApp(App):
     def build(self):
