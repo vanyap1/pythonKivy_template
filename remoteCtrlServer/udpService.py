@@ -3,7 +3,7 @@ import json
 import threading
 
 """
-Usage examle
+Usage example:
 self.udpClient = UdpAsyncClient(self)
 self.udpClient.startListener(5005, self.serverUdpIncomingData)
 
@@ -11,7 +11,6 @@ def serverUdpIncomingData(self, data):
         print("UDP data-", data)
         pass
 """
-
 
 class UdpAsyncClient:
     def __init__(self, mainLoopInstance, cbFn=None, port=5005, bufferSize=1024):
@@ -21,7 +20,8 @@ class UdpAsyncClient:
         self.bufferSize = bufferSize
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.bind(('', self.port))
+        self.listener_thread = None
+        self.listening = False
 
     def startListener(self, port, cbFunction):
         """
@@ -33,26 +33,32 @@ class UdpAsyncClient:
         """
         self.port = port
         self.parrentCb = cbFunction
+        self.listening = True
         self.listener_thread = threading.Thread(target=self.run)
         self.listener_thread.daemon = True
         self.listener_thread.start()
 
     def run(self):
-        while True:
+        self.sock.bind(('', self.port))
+        while self.listening:
             try:
                 data, _ = self.sock.recvfrom(self.bufferSize)
                 message = data.decode('utf-8')
                 
                 try:
-                    json_data = json.loads(message)
-                    self.parrentCb(json_data)
-                except json.JSONDecodeError as e:
+                    #json_data = json.loads(message)
+                    self.parrentCb(message)
+                except json.JSONDecodeError:
                     self.parrentCb("err") 
                 
-            except Exception as e:
+            except Exception:
                 pass
-                #self.parrentCb("err") 
-    
+
+    def stopListener(self):
+        self.listening = False
+        if self.listener_thread:
+            self.listener_thread.join()
+
     def send_data(self, data, ip, port):
         """
         Відправляє дані через UDP сокет. Автоматично визначає тип даних (рядок або байти).

@@ -5,25 +5,23 @@ class ProcessStatus:
     runing = "running"
     stopped = "stopped"
     paused = "paused"
+    pending = "pending"
     error = "error"
     criticalError = "criticalError"
     failed = "failed"
     passed = "passed"
     canceled = "canceled"
     completed = "completed"
-    pending = "pending"
+    
 
 class BackgroundWorker(Thread):
     def __init__(self):
-        """
-        Ініціалізує фоновий процес.
-        """
         super(BackgroundWorker, self).__init__()
         self.currentState = ProcessStatus.pending
         self.daemon = True
         self._running = True
         self._frozen = False
-        self._cmd = ""  # Команда для виконання в потоці
+        self._cmd = ""  
 
     def startProc(self):
         """
@@ -46,7 +44,6 @@ class BackgroundWorker(Thread):
         Призупиняє виконання потоку.
         """
         self._running = False
-
     def getStatus(self):
         """
         Повертає поточний статус потоку.

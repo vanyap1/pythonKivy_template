@@ -5,6 +5,7 @@ import shlex
 import pty
 import os, socket, re
 import random
+import json
 from urllib import request
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -39,7 +40,8 @@ expanderAddr = 0x20
 
 class udpReportService():
     ip = '192.168.1.255'
-    port = 55005
+    rx_port = 5006
+    tx_port = 55006
 
 
 
@@ -80,7 +82,7 @@ class MainScreen(FloatLayout):
         ## Server start
         self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self)
         self.udpClient = UdpAsyncClient(self)
-        self.udpClient.startListener(5005, self.serverUdpIncomingData)
+        self.udpClient.startListener(udpReportService.rx_port, self.serverUdpIncomingData)
         
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
@@ -88,35 +90,26 @@ class MainScreen(FloatLayout):
         self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 500) , font_name='fonts/hemi_head_bd_it.ttf')
         self.add_widget(self.clock)
 
-        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=24, pos=(-200, 400), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
+        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, pos=(-100, 300), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
         self.add_widget(self.servReport)
 
 
         self.button1 = Button(text='', size_hint=(None, None), size=(192, 192), pos_hint={'center_x': .3, 'center_y': .5},
                               background_normal='images/switch3_off.png', background_down='images/switch3.png')
-        self.button1.bind(on_release=lambda instance: self.on_button_release("Message from Button 1"))
+        self.button1.bind(on_release=lambda instance: self.on_button_release("spn:dune:1"))
         self.add_widget(self.button1)
 
         self.button2 = Button(text='', size_hint=(None, None), size=(192, 192), pos_hint={'center_x': .7, 'center_y': .5},
                               background_normal='images/switch3_off.png', background_down='images/switch3.png')
-        self.button2.bind(on_release=lambda instance: self.on_button_release("Message from Button 2"))
+        self.button2.bind(on_release=lambda instance: self.on_button_release("spn:dune:0"))
         self.add_widget(self.button2)
 
     def on_button_release(self, message):
-        """
-        Обробляє подію відпускання кнопки та відправляє повідомлення через UDP.
-        
-        Parameters:
-        message (str): Повідомлення для відправки.
-        """
-        self.udpClient.send_data(message, udpReportService.ip, udpReportService.port)
+        self.udpClient.send_data(message, udpReportService.ip, udpReportService.tx_port)
 
 
 
     def update_time(self):
-        """
-        Оновлює значення аналогового дисплея та відправляє повідомлення через UDP.
-        """
         #print(self.gpio.pinRead(self.jigSw))
         self.analog_display.value = random.randint(0,200)
         self.gpio.pinWrite(self.okLED, random.randint(0,1))
@@ -126,29 +119,18 @@ class MainScreen(FloatLayout):
         #print(self.backProc.getStatus())
 
     def serverUdpIncomingData(self, data):
-        """
-        Обробляє вхідні дані UDP сервера.
-        
-        Parameters:
-        data (str): Вхідні дані.
-        """
         try:
-            self.servReport.text = f'[color=00ffcc]{data}[/color]'
-            #print(data)
+            #gtaData = data.split(":")
+            #gtaSpd = gtaData[2].split(";")
+            json_data = json.loads(data)
+            gtaSpd = data
+            self.servReport.text = f"[color=00ffcc]{json_data['socStatusLoad'][0]} %, {json_data['socVoltage']/100} V, {json_data['socTemperature']/10} °C[/color]"
+            print(json_data)
             pass
         except:
             print("Error in udp data")
     ##server handler CB function
     def remCtrlCB(self, arg):
-        """
-        Обробляє запити віддаленого керування.
-        
-        Parameters:
-        arg (str): Аргумент запиту.
-        
-        Returns:
-        str: Результат обробки запиту.
-        """
         #['', 'slot', '0', 'status']
         request = arg.lower().split("/")
         print("CB arg-", request )
@@ -163,9 +145,6 @@ class MainScreen(FloatLayout):
         return "ok" 
     
     def stop_server(self):
-        """
-        Зупиняє HTTP сервер.
-        """
         if self.server:
             self.server.shutdown()
             self.server_thread.join()
