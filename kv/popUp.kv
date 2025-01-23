@@ -1,0 +1,117 @@
+<PopupMenu>:
+    orientation: 'vertical'
+    size_hint: None, None
+    size: 400, 400
+    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+    BoxLayout:
+        size_hint_y: None
+        height: 40
+        Label:
+            text: 'Parameters'
+            font_size: 20
+            halign: 'center'
+            valign: 'middle'
+            text_size: self.size
+
+    BoxLayout:
+        size_hint_y: None
+        height: 2
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1  # Чорний колір
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+    ScrollView:
+        size_hint: 1, None
+        height: 280  # Висота області прокрутки
+
+        GridLayout:
+            cols: 1
+            size_hint_y: None
+            height: self.minimum_height
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 1'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 2'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 3'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 4'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 5'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 6'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 7'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 8'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 9'
+                CheckBox:
+
+            BoxLayout:
+                size_hint_y: None
+                height: 40
+                Label:
+                    text: 'Parameter 10'
+                CheckBox:
+
+    BoxLayout:
+        size_hint_y: None
+        height: 40
+        spacing: 10
+        padding: [10, 10, 10, 10]
+        pos_hint: {'y': 0.05}  # Офсет на 20 пікселів вверх
+        Button:
+            text: 'Save'
+            on_release: root.save_parameters()
+        Button:
+            text: 'Exit'
+            on_release: root.dismiss()

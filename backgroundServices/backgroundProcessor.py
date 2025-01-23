@@ -92,7 +92,7 @@ class BackgroundWorker(Thread):
         print("Thread is STARTED")
         self.currentState = ProcessStatus.pending
         while self._running:
-            print(f"Thread is running {self._cmd}")
+            #print(f"Thread is running {self._cmd}")
             time.sleep(1)
             self._procPause()
         print("Thread is STOPED")

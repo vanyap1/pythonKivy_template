@@ -28,35 +28,22 @@ from kivy.factory import Factory
 
 from remoteCtrlServer.httpserver import start_server_in_thread
 from remoteCtrlServer.udpService import UdpAsyncClient
+from pyIOdriver.i2c_gpio import  I2CGPIOController, IO, DIR, Expander
 
+from analogMeterWidget.analogGaugeWidget import analog_meter
 from backgroundServices.backgroundProcessor import BackgroundWorker
 
 
 remCtrlPort = 8080
-
-Builder.load_file('kv/bottomBar.kv')
-
-Builder.load_file('kv/popUp.kv')
+sysI2cBus = 0
+expanderAddr = 0x20
 
 class udpReportService():
     ip = '192.168.1.255'
     rx_port = 5006
     tx_port = 55006
 
-class BottomBar(BoxLayout):
-    def show_menu(self):
-        menu = PopupMenu()
-        popup = Popup(content=menu, size_hint=(None, None), size=(430, 400))
-        popup.open()
 
-class PopupMenu(BoxLayout):
-    def save_parameters(self):
-        # Додайте логіку для збереження параметрів
-        print("Parameters saved")
-        self.dismiss()
-
-    def dismiss(self):
-        self.parent.parent.dismiss()
 
 class MainScreen(FloatLayout):
     def __init__(self, **kwargs):
@@ -68,10 +55,29 @@ class MainScreen(FloatLayout):
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
-        self.bottom_bar = BottomBar()
-        self.add_widget(self.bottom_bar)
+        self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(0, 980))
+        self.add_widget(self.analog_display)
 
+
+        ## GPIO controller init 
+        self.gpio = I2CGPIOController(sysI2cBus)
+        self.gpioExpander = Expander(Expander.PCA9535)
+        self.gpioExpander.addr = expanderAddr
+
+        self.okLED =IO(expander = self.gpioExpander, portNum = 1, pinNum = 3, pinDir=DIR.OUTPUT)
+        self.busyLED =IO(expander = self.gpioExpander, portNum = 1, pinNum = 4, pinDir=DIR.OUTPUT)
+        self.errLED =IO(expander = self.gpioExpander, portNum = 1, pinNum = 5, pinDir=DIR.OUTPUT)
+        self.jigSw = IO(expander = self.gpioExpander, portNum = 1, pinNum = 0, pinDir=DIR.INPUT)
         
+        self.gpio.addExpandersInfo(self.gpioExpander)
+        
+        self.gpio.setPinDirection(self.jigSw, False)
+        self.gpio.setPinDirection(self.busyLED, True)
+        self.gpio.setPinDirection(self.okLED, False)
+        self.gpio.setPinDirection(self.errLED, False)
+        
+        self.gpio.startController()
+
 
         ## Server start
         self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self)
@@ -80,7 +86,7 @@ class MainScreen(FloatLayout):
         
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
-    
+        
         self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 500) , font_name='fonts/hemi_head_bd_it.ttf')
         self.add_widget(self.clock)
 
@@ -105,7 +111,8 @@ class MainScreen(FloatLayout):
 
     def update_time(self):
         #print(self.gpio.pinRead(self.jigSw))
-        
+        self.analog_display.value = random.randint(0,200)
+        self.gpio.pinWrite(self.okLED, random.randint(0,1))
 
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
@@ -150,7 +157,6 @@ class BoxApp(App):
     def on_stop(self):
         self.screen.stop_server()
         pass
-
 
 if __name__ == '__main__':
     BoxApp().run()
