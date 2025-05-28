@@ -6,7 +6,7 @@
         use_separator: True
         ActionPrevious:
             title: 'Action Bar'
-            with_previous: False
+            with_previous: True
         ActionOverflow:
         ActionButton:
             id: icon_btn
@@ -20,6 +20,16 @@
             icon: 'atlas://data/images/defaulttheme/media-playback-stop'
             text: 'Stop'
             on_press: root.on_btn_press(self.text)
+        ActionButton:
+            icon: 'atlas://data/images/defaulttheme/image-missing'
+            text: 'Stop'
+            on_press: root.on_btn_press(self.text)
+        ActionCheck:
+            text: ''
+            size_hint_x: None
+            width: '40dp'
+        
+    
         ActionButton:
             id: check_btn
             icon: 'atlas://data/images/defaulttheme/checkbox_on' if root.check_state else 'atlas://data/images/defaulttheme/checkbox_off'
@@ -39,7 +49,8 @@
                 color: 1, 0, 0, 1
                 on_press:
                     root.select_mode('Mode 2')
+               
         ActionLabel:
-            text: root.label_text
+            text: root.sysTime
             color: 1, 1, 1, 1
             font_size: '18sp'

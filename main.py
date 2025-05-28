@@ -30,7 +30,10 @@ from kivy.uix.actionbar import ActionBar
 from remoteCtrlServer.httpserver import start_server_in_thread
 from remoteCtrlServer.udpService import UdpAsyncClient
 
+
 from backgroundServices.backgroundProcessor import BackgroundWorker
+
+
 class SystemParamObject:
     """A class to represent a system parameter."""
     systime = "00:00:00"
@@ -53,31 +56,36 @@ class udpReportService():
 
 class BottomBar(BoxLayout):
     def show_menu(self):
-        menu = PopupMenu()
-        popup = Popup(content=menu, size_hint=(None, None), size=(430, 400))
-        popup.open()
+        self.menu = PopupMenu()
+        self.popup = Popup(content=self.menu, size_hint=(None, None), size=(500, 500), title='Settings')
+        self.menu.popup_ref = self.popup # <-- передаємо посилання
+        self.popup.open()
 
 class PopupMenu(BoxLayout):
+    popup_ref = ObjectProperty(None)
     def save_parameters(self):
         # Додайте логіку для збереження параметрів
         print("Parameters saved")
         self.dismiss()
 
     def dismiss(self):
-        self.parent.parent.dismiss()
+        print("Popup dismissed")
+        if self.popup_ref:
+            self.popup_ref.dismiss()
 
 class MyActionBar(ActionBar):
-    SystemParamObject = ObjectProperty(None)
+    sysTime = StringProperty("00:00:00")
     volume_icons = [
         'atlas://data/images/defaulttheme/audio-volume-muted',
         'atlas://data/images/defaulttheme/audio-volume-low',
         'atlas://data/images/defaulttheme/audio-volume-medium',
         'atlas://data/images/defaulttheme/audio-volume-high'
     ]
-    icon_state = StringProperty(volume_icons[0])
-    volume_index = 0
+    volume_index = 1
+    icon_state = StringProperty(volume_icons[volume_index])
+    
     check_state = BooleanProperty(False)
-    label_text = StringProperty("10:30")
+    
     selected_mode = StringProperty("Mode 1")
     mode_color = ListProperty([0, 1, 0, 1])  # Зелений за замовчуванням
 
@@ -116,7 +124,7 @@ class MainScreen(FloatLayout):
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
-        self.action_bar = Factory.MyActionBar()
+        self.action_bar = MyActionBar()
         
         self.add_widget(self.action_bar)
 
@@ -161,7 +169,7 @@ class MainScreen(FloatLayout):
 
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         self.SystemParam.systime = datetime.now().strftime('%H:%M:%S')
-        self.action_bar.label_text = self.SystemParam.systime
+        self.action_bar.sysTime = self.SystemParam.systime
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
         #print(self.backProc.getStatus())
 
