@@ -18,25 +18,33 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.image import Image
 from kivy.uix.scatter import Scatter
-from kivy.properties import StringProperty, NumericProperty, BooleanProperty, ObjectProperty
+from kivy.properties import StringProperty, NumericProperty, BooleanProperty, ObjectProperty, ListProperty
 from datetime import datetime, date, timedelta
 from collections import namedtuple
 from kivy.uix.popup import Popup
 from kivy.config import Config
 from kivy.core.window import Window
 from kivy.factory import Factory
+from kivy.uix.actionbar import ActionBar
 
 from remoteCtrlServer.httpserver import start_server_in_thread
 from remoteCtrlServer.udpService import UdpAsyncClient
 
 from backgroundServices.backgroundProcessor import BackgroundWorker
-
+class SystemParamObject:
+    """A class to represent a system parameter."""
+    systime = "00:00:00"
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
 
 remCtrlPort = 8080
 
 Builder.load_file('kv/bottomBar.kv')
-
 Builder.load_file('kv/popUp.kv')
+Builder.load_file('kv/actionBar.kv')
+
+
 
 class udpReportService():
     ip = '192.168.1.255'
@@ -58,9 +66,49 @@ class PopupMenu(BoxLayout):
     def dismiss(self):
         self.parent.parent.dismiss()
 
+class MyActionBar(ActionBar):
+    SystemParamObject = ObjectProperty(None)
+    volume_icons = [
+        'atlas://data/images/defaulttheme/audio-volume-muted',
+        'atlas://data/images/defaulttheme/audio-volume-low',
+        'atlas://data/images/defaulttheme/audio-volume-medium',
+        'atlas://data/images/defaulttheme/audio-volume-high'
+    ]
+    icon_state = StringProperty(volume_icons[0])
+    volume_index = 0
+    check_state = BooleanProperty(False)
+    label_text = StringProperty("10:30")
+    selected_mode = StringProperty("Mode 1")
+    mode_color = ListProperty([0, 1, 0, 1])  # Зелений за замовчуванням
+
+    def on_btn_press(self, btn_text):
+        print(f"Натиснута кнопка: {btn_text}")
+
+    def on_check_press(self, btn):
+        self.check_state = not self.check_state
+        btn.icon = (
+            'atlas://data/images/defaulttheme/checkbox_on'
+            if self.check_state else
+            'atlas://data/images/defaulttheme/checkbox_off'
+        )
+
+    def switch_icon(self, btn):
+        self.volume_index = (self.volume_index + 1) % len(self.volume_icons)
+        self.icon_state = self.volume_icons[self.volume_index]
+        btn.icon = self.icon_state
+
+    def select_mode(self, mode):
+        self.selected_mode = mode
+        if mode == "Mode 1":
+            self.mode_color = [0, 1, 0, 1]  # Зелений
+        else:
+            self.mode_color = [1, 0, 0, 1]  # Червоний
+
+
 class MainScreen(FloatLayout):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
+        self.SystemParam = SystemParamObject("System", "Default")
         self.backProc = BackgroundWorker()
         self.backProc.startProc()
         
@@ -68,6 +116,10 @@ class MainScreen(FloatLayout):
         self.background_image = Image(source='images/bg_d.jpg', size=self.size)
         self.add_widget(self.background_image)
         
+        self.action_bar = Factory.MyActionBar()
+        
+        self.add_widget(self.action_bar)
+
         self.bottom_bar = BottomBar()
         self.add_widget(self.bottom_bar)
 
@@ -81,7 +133,7 @@ class MainScreen(FloatLayout):
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
     
-        self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 500) , font_name='fonts/hemi_head_bd_it.ttf')
+        self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 400) , font_name='fonts/hemi_head_bd_it.ttf')
         self.add_widget(self.clock)
 
         self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, pos=(-100, 300), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
@@ -108,6 +160,8 @@ class MainScreen(FloatLayout):
         
 
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
+        self.SystemParam.systime = datetime.now().strftime('%H:%M:%S')
+        self.action_bar.label_text = self.SystemParam.systime
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
         #print(self.backProc.getStatus())
 

@@ -1,0 +1,45 @@
+<MyActionBar>:
+    pos_hint: {'top':1}
+    size_hint_y: None
+    height: '48dp'
+    ActionView:
+        use_separator: True
+        ActionPrevious:
+            title: 'Action Bar'
+            with_previous: False
+        ActionOverflow:
+        ActionButton:
+            id: icon_btn
+            icon: root.icon_state
+            on_press: root.switch_icon(self)
+        ActionButton:
+            icon: 'atlas://data/images/defaulttheme/media-playback-start'
+            text: 'Play'
+            on_press: root.on_btn_press(self.text)
+        ActionButton:
+            icon: 'atlas://data/images/defaulttheme/media-playback-stop'
+            text: 'Stop'
+            on_press: root.on_btn_press(self.text)
+        ActionButton:
+            id: check_btn
+            icon: 'atlas://data/images/defaulttheme/checkbox_on' if root.check_state else 'atlas://data/images/defaulttheme/checkbox_off'
+            text: 'Check'
+            on_press: root.on_check_press(self)
+        ActionGroup:
+            text: root.selected_mode
+            color: root.mode_color
+            mode: 'spinner'
+            ActionButton:
+                text: 'Mode 1'
+                color: 0, 1, 0, 1
+                on_press:
+                    root.select_mode('Mode 1')
+            ActionButton:
+                text: 'Mode 2'
+                color: 1, 0, 0, 1
+                on_press:
+                    root.select_mode('Mode 2')
+        ActionLabel:
+            text: root.label_text
+            color: 1, 1, 1, 1
+            font_size: '18sp'
