@@ -38,6 +38,8 @@ from garden.gauge import Gauge
 
 
 
+
+
 class SystemParamObject:
     """A class to represent a system parameter."""
     systime = "00:00:00"
@@ -171,11 +173,11 @@ class MainScreen(FloatLayout):
         self.graph1 = MyGraph()
         self.dashGroup.add_widget(self.graph1)
         
-        self.voltmeter = Gauge(value=0, size_gauge=240, size_text=14, meterType="Voltmeter", units='V')
-        self.socmeter = Gauge(value=0, size_gauge=240, size_text=14, meterType="SOC", units='%')
-        self.tempmeter = Gauge(value=0, size_gauge=240, size_text=14, meterType="Temp", units='°C')
+        self.voltmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="Volt", units='V', graduation='0, 10, 20, 30, 40, 50, _', graduationStepAngle=4.5)
+        self.socmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="SOC", units='%', graduation='0, 20, 40, 60, 80, 100, _', graduationStepAngle=2.25)
+        self.tempmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="Temp", units='°C', graduation='0, 10, 20, 30, 40, 50, _', graduationStepAngle=4.5)
 
-        self.analogMetersGroup = BoxLayout(orientation='vertical' , size_hint=(None, None), size=(200, 530))
+        self.analogMetersGroup = BoxLayout(orientation='vertical' , size_hint=(None, None), size=(200, 600))
         self.analogMetersGroup.add_widget(self.voltmeter)
         self.analogMetersGroup.add_widget(self.socmeter)
         self.analogMetersGroup.add_widget(self.tempmeter)
@@ -216,6 +218,8 @@ class MainScreen(FloatLayout):
             self.voltmeter.value = json_data['socVoltage'] / 100
             self.socmeter.value = json_data['socStatusLoad'][0]
             self.tempmeter.value = json_data['socTemperature'] / 10
+
+
     
             #self.servReport.text = f"[color=00ffcc]{gtaSpd[0]} km/h, {gtaSpd[1]} V, {gtaSpd[2]} °C[/color]"
             print(json_data)

@@ -50,7 +50,7 @@ The current availables plots are:
 
 '''
 
-__all__ = ('Graph', 'Plot', 'MeshLinePlot', 'MeshStemPlot', 'LinePlot', 'SmoothLinePlot', 'ContourPlot')
+__all__ = ('MyGraph','Graph', 'Plot', 'MeshLinePlot', 'MeshStemPlot', 'LinePlot', 'SmoothLinePlot', 'ContourPlot')
 __version__ = '0.4-dev'
 
 from kivy.uix.widget import Widget

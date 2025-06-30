@@ -3,3 +3,7 @@ udev rules -
     KERNEL=="i2c-[0-9]*", MODE="0777"
     sudo udevadm control --reload-rules
     sudo udevadm trigger
+
+
+
+    pip install cairosvg --break-system-packages
