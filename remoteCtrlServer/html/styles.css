@@ -1,3 +1,4 @@
+/* Основні стилі */
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
@@ -14,16 +15,63 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 500px;
+    width: 600px;
     text-align: center;
+    border: 2px solid #333;
 }
 
 h1 {
     margin-bottom: 20px;
 }
 
-.input-group {
+h2 {
     margin-bottom: 20px;
+    color: #3208ec;
+    font-size: 24px;
+}
+
+.h2-primary {
+    color: #007bff;
+    font-size: 18px;
+}
+
+.h2-secondary {
+    color: #6c757d;
+    font-size: 18px;
+}
+
+.h2-success {
+    color: #28a745;
+    font-size: 18px;
+}
+
+.h2-danger {
+    color: #dc3545;
+    font-size: 18px;
+}
+
+.h2-warning {
+    color: #ffc107;
+    font-size: 18px;
+}
+
+.h2-info {
+    color: #17a2b8;
+    font-size: 18px;
+}
+
+.h2-light {
+    color: #f8f9fa;
+    font-size: 18px;
+}
+
+.h2-dark {
+    color: #343a40;
+    font-size: 18px;
+}
+
+.input-group {
+    margin-bottom: 18px;
 }
 
 select, input[type="text"] {
@@ -42,8 +90,68 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.button-primary {
+    background-color: #007bff;
+}
+.button-primary:hover {
     background-color: #0056b3;
+}
+
+.button-secondary {
+    background-color: #6c757d;
+}
+.button-secondary:hover {
+    background-color: #5a6268;
+}
+
+.button-success {
+    background-color: #28a745;
+}
+.button-success:hover {
+    background-color: #218838;
+}
+
+.button-danger {
+    background-color: #dc3545;
+}
+.button-danger:hover {
+    background-color: #c82333;
+}
+
+.button-exec {
+    background-color: #f16b11;
+}
+.button-exec:hover {
+    background-color: #d15a0a;
+}
+
+.button-warning {
+    background-color: #ffc107;
+}
+.button-warning:hover {
+    background-color: #e0a800;
+}
+
+.button-info {
+    background-color: #17a2b8;
+}
+.button-info:hover {
+    background-color: #138496;
+}
+
+.button-light {
+    background-color: #f8f9fa;
+    color: #000;
+}
+.button-light:hover {
+    background-color: #e2e6ea;
+}
+
+.button-dark {
+    background-color: #343a40;
+}
+.button-dark:hover {
+    background-color: #23272b;
 }
 
 .button-group {
@@ -62,4 +170,130 @@ pre {
     border-radius: 4px;
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+/* Додаткові стилі для часто використовуваних елементів */
+p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    list-style-type: disc;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+li {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+/* Темна тема */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode .container {
+    background-color: #1e1e1e;
+    border: 2px solid #444;
+}
+
+body.dark-mode h2 {
+    color: #bb86fc;
+}
+
+body.dark-mode .h2-primary {
+    color: #bb86fc;
+}
+
+body.dark-mode .h2-secondary {
+    color: #b0b0b0;
+}
+
+body.dark-mode .h2-success {
+    color: #03dac6;
+}
+
+body.dark-mode .h2-danger {
+    color: #cf6679;
+}
+
+body.dark-mode .h2-warning {
+    color: #ffb74d;
+}
+
+body.dark-mode .h2-info {
+    color: #81d4fa;
+}
+
+body.dark-mode .h2-light {
+    color: #f8f9fa;
+}
+
+body.dark-mode .h2-dark {
+    color: #e0e0e0;
+}
+
+body.dark-mode select, 
+body.dark-mode input[type="text"] {
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+body.dark-mode button {
+    background-color: #333;
+    color: #e0e0e0;
+}
+
+body.dark-mode .button-primary:hover {
+    background-color: #0056b3;
+}
+
+body.dark-mode .button-secondary:hover {
+    background-color: #5a6268;
+}
+
+body.dark-mode .button-success:hover {
+    background-color: #218838;
+}
+
+body.dark-mode .button-danger:hover {
+    background-color: #c82333;
+}
+
+body.dark-mode .button-exec:hover {
+    background-color: #d15a0a;
+}
+
+body.dark-mode .button-warning:hover {
+    background-color: #e0a800;
+}
+
+body.dark-mode .button-info:hover {
+    background-color: #138496;
+}
+
+body.dark-mode .button-light:hover {
+    background-color: #e2e6ea;
+}
+
+body.dark-mode .button-dark:hover {
+    background-color: #23272b;
+}
+
+body.dark-mode pre {
+    background-color: #333;
+    border: 1px solid #555;
 }

@@ -37,46 +37,98 @@
                     sendCommand(commandText);
                     return;
                 }
+            } else if (commandText === 'cmd' || 
+            commandText === 'id' || 
+            commandText === 'tel') {
+                if (command) {
+                    sendCommand(commandText + '=' + command);
+                    return;
+                } else {
+                    sendCommand(commandText);
+                    return;
+                }
+
             } else {
                 sendCommand(commandText);
                 return;
             }
         }
+
         function onButtonClick(buttonId) {
-            sendCommand(buttonId + '=pressed');
+            document.getElementById('commandDropdown').value = buttonId;
+            updateCommandExample();
+            sendCommand(buttonId);
+        }
+
+        function updateCommandExample() {
+            const command = document.getElementById('commandInput').value;
+            const commandText = document.getElementById('commandDropdown').value;
+            const slotName = document.getElementById('slotsDropdown').value;
+            let example = '/cmd:';
+            if (slotName) {
+                example += slotName + '/';
+            }
+            if (commandText === 'cmd' || 
+            commandText === 'id' || 
+            commandText === 'tel') {
+                if (command) {
+                    example += commandText + '=' + command;
+                } else {
+                    example += commandText;
+                }
+            } else {
+                example += commandText;
+            }
+            document.getElementById('commandExample').innerText = example;
+        }
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const button = document.getElementById('toggleDarkModeButton');
+            if (document.body.classList.contains('dark-mode')) {
+                button.innerText = 'Light Mode';
+            } else {
+                button.innerText = 'Dark Mode';
+            }
         }
     </script>
 </head>
 
-<body>
+<body class="dark-mode">
     <div class="container">
-        <h1>Command interface</h1>
+        <h1>Lora commander</h1>
         <div class="input-group">
-            <select id="slotsDropdown">
+            <select id="slotsDropdown" onchange="updateCommandExample()">
                 <option value="">none</option>
                 <option value="slot1">slot1</option>
                 <option value="slot2">slot2</option>
             </select>
-            <select id="commandDropdown">
-                <option value="status">status</option>
+            <select id="commandDropdown" onchange="updateCommandExample()">
+                <option value="id">id beacon</option>
                 <option value="cmd">cmd</option>
-                <option value="run">run</option>
-                <option value="stop">stop</option>
+                
+                
             </select>
-            <input type="text" id="commandInput" placeholder="Введіть команду">
-            <button onclick="onOkButtonClick()">EXEC</button>
+            <input type="text" id="commandInput" placeholder="Type your command" oninput="updateCommandExample()">
+            <button class="button-exec" onclick="onOkButtonClick()">EXEC</button>
         </div>
-
 
         <div class="result-group">
-            <h2>Result:</h2>
+            <h2 class="h2-success">Command example:</h2>
+            <pre id="commandExample">/cmd:</pre>
+        </div>
+        <div class="result-group">
+            <h2 class="h2-info">Result:</h2>
             <pre id="result">No data</pre>
         </div>
+        
         <div class="button-group">
-            <button onclick="onButtonClick('btn0')">Button 0</button>
-            <button onclick="onButtonClick('btn1')">Button 1</button>
-            <button onclick="onButtonClick('btn2')">Button 2</button>
+            <button class="button button-primary" onclick="onButtonClick('test')">Test</button>
+            <button class="button button-info" onclick="onButtonClick('timysync')">Time sync</button>
+            <button class="button button-warning" onclick="onButtonClick('ch=1;value=1')">Set IO</button>
+            <button class="button button-warning" onclick="onButtonClick('ch=1;value=0')">Reset IO</button>
+            <button class="button button-info" id="toggleDarkModeButton" onclick="toggleDarkMode()">Light Mode</button>
         </div>
+        
     </div>
 </body>
 

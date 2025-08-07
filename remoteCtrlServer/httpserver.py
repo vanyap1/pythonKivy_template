@@ -7,6 +7,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         self.client_instance = client_instance
         self.clientCbFunction = clientCbFunction
         super().__init__(*args, **kwargs)
+    def log_message(self, format, *args):
+        # No logging
+        return
 
     def do_GET(self):
         if self.path == '/':
@@ -47,6 +50,8 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write("No client instance".encode('utf-8'))
+
+
 
 
 

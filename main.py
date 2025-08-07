@@ -35,7 +35,7 @@ from math import sin, cos, pi
 from backgroundServices.backgroundProcessor import BackgroundWorker
 from garden.graph import MyGraph
 from garden.gauge import Gauge
-
+from getIp import get_active_ip_addresses, get_active_ip_addresses_simple
 
 
 
@@ -80,7 +80,10 @@ class PopupMenu(BoxLayout):
             self.popup_ref.dismiss()
 
 class MyActionBar(ActionBar):
+    title = StringProperty("SmarHome Sys")
+    app_icon = StringProperty('images/smIcon.png')  # Власна іконка
     sysTime = StringProperty("00:00:00")
+    sysIp = StringProperty("192.168.1.1\n192.168.1.2")
     volume_icons = [
         'atlas://data/images/defaulttheme/audio-volume-muted',
         'atlas://data/images/defaulttheme/audio-volume-low',
@@ -151,10 +154,12 @@ class MainScreen(FloatLayout):
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
     
-        self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 400) , font_name='fonts/hemi_head_bd_it.ttf')
+        self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, size_hint=(None, None), pos=(300, 900) , font_name='fonts/hemi_head_bd_it.ttf', halign='left')
         self.add_widget(self.clock)
 
-        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, pos=(-100, 300), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
+        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, size_hint=(None, None), pos=(350, 800), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
+        
+        
         self.add_widget(self.servReport)
 
 
@@ -199,11 +204,10 @@ class MainScreen(FloatLayout):
     def update_time(self):
         #print(self.gpio.pinRead(self.jigSw))
         
-     
-
         self.clock.text='[color=0099ff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         self.SystemParam.systime = datetime.now().strftime('%H:%M:%S')
         self.action_bar.sysTime = self.SystemParam.systime
+        self.action_bar.sysIp = get_active_ip_addresses_simple()
         #self.udpClient.send_text("Hello", udpReportService.ip, udpReportService.port)
         #print(self.backProc.getStatus())
 

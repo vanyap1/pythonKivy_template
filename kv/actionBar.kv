@@ -5,9 +5,17 @@
     ActionView:
         use_separator: True
         ActionPrevious:
-            title: 'Action Bar'
-            with_previous: True
-        ActionOverflow:
+            title: root.title
+            with_previous: False
+            app_icon: root.app_icon
+        #ActionOverflow:
+        
+        
+        ActionLabel:
+            text: root.sysIp
+            color: 1, 1, 1, 1
+            font_size: '14sp'
+        
         ActionButton:
             id: icon_btn
             icon: root.icon_state

@@ -1,0 +1,9 @@
+
+sudo nano /etc/udev/rules.d/99-customDevRules.rules
+    KERNEL=="i2c-[0-9]*"     , MODE="0777"
+    KERNEL=="gpiochip[0-9]*" , MODE="0777"
+    KERNEL=="spidev[0-9]*.*" , MODE="0777"
+
+
+sudo udevadm control --reload-rules
+sudo udevadm trigger

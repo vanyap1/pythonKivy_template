@@ -3,6 +3,7 @@ import json
 import threading
 import struct
 import time
+import datetime
 """
 Usage example:
 self.udpClient = UdpAsyncClient(self)
@@ -194,10 +195,13 @@ def serverUdpIncomingData(can_message):
 if __name__ == "__main__":
     udpClient = SmartHomeGatewayUdpClient(cbFn=serverUdpIncomingData, gatewayIp="192.168.1.18", rxPort=4030, txPort=4031, bufferSize=1024)
     udpClient.startListener()
+    time.sleep(0.5)
+    now = datetime.datetime.now()
+    udpClient.sendCanMessage(can_id=0x101, data_bytes=[0x0, 0x0, now.day, now.month, now.year % 100, now.hour, now.minute, now.second])
 
     while True:
         time.sleep(1)
-        udpClient.sendCanMessage(can_id=0x100, data_bytes=[0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0], msgType=1)
+        udpClient.sendCanMessage(can_id=0x100, data_bytes=[0x0, 0x02], msgType=1)
 
         #time.sleep(1)
         #print("set 1")
