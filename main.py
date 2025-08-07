@@ -155,9 +155,9 @@ class MainScreen(FloatLayout):
 
     
         self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, size_hint=(None, None), pos=(300, 900) , font_name='fonts/hemi_head_bd_it.ttf', halign='left')
-        self.add_widget(self.clock)
+        #self.add_widget(self.clock)
 
-        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, size_hint=(None, None), pos=(350, 800), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
+        self.servReport = Label(text='[color=00ffcc]No data[/color]', markup=True, font_size=50, size_hint=(None, None), pos=(350, 700), font_name='fonts/hemi_head_bd_it.ttf', halign='left')
         
         
         self.add_widget(self.servReport)
@@ -175,9 +175,10 @@ class MainScreen(FloatLayout):
 
         self.dashGroup = BoxLayout(orientation='horizontal', size_hint=(None, None),  pos=(100, 100))
 
-        self.graph1 = MyGraph()
+        self.graph1 = MyGraph(do_rotation=False, do_scale=False, do_translation=False)
+        self.graph1.add_horisontalLine(0, rgb('808080'))  # Додаємо горизонтальну лінію в нулі
         self.dashGroup.add_widget(self.graph1)
-        
+
         self.voltmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="Volt", units='V', graduation='0, 10, 20, 30, 40, 50, _', graduationStepAngle=4.5)
         self.socmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="SOC", units='%', graduation='0, 20, 40, 60, 80, 100, _', graduationStepAngle=2.25)
         self.tempmeter = Gauge(value=0, size_gauge=200, size_text=14, meterType="Temp", units='°C', graduation='0, 10, 20, 30, 40, 50, _', graduationStepAngle=4.5)
@@ -226,7 +227,7 @@ class MainScreen(FloatLayout):
 
     
             #self.servReport.text = f"[color=00ffcc]{gtaSpd[0]} km/h, {gtaSpd[1]} V, {gtaSpd[2]} °C[/color]"
-            print(json_data)
+            #print(json_data)
             pass
         except:
             print("Error in udp data")

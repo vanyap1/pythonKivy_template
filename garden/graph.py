@@ -1525,8 +1525,8 @@ class MyGraph(ScatterLayout):
     y_grid = BooleanProperty(True)
     xmin = NumericProperty(0)
     xmax = NumericProperty(1000)
-    ymin = NumericProperty(-60)
-    ymax = NumericProperty(60)
+    ymin = NumericProperty(-100)
+    ymax = NumericProperty(55)
     def __init__(self, **kwargs):
         super(MyGraph, self).__init__(**kwargs)
         self.size = (800, 600)
@@ -1566,8 +1566,19 @@ class MyGraph(ScatterLayout):
         #self.plot.points = [(x / 10., sin(x / 50.)) for x in range(0, 1000)]
         self.plot.points = []
         
+        # Горизонтальна лінія в нулі (сіра, 1 піксель)
+        #self.zero_line = HBar(color=rgb('808080'))  # Сірий колір
+        #self.zero_line.points = [0]  # Y = 0    
+
+        #self.graph.add_plot(self.zero_line)
         self.graph.add_plot(self.plot)
         self.add_widget(self.graph)
+
+    def add_horisontalLine(self, y, color):
+        # Додаємо горизонтальну лінію на графік
+        hbar = HBar(color=color)
+        hbar.points = [y]
+        self.graph.add_plot(hbar)
 
     def add_y_point(self, y):
         # Додаємо нову точку
