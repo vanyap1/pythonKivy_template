@@ -89,8 +89,7 @@ def get_active_ip_addresses_simple():
                 ip_addresses.append('No Network')
     
     unique_ips = list(set(ip_addresses))
-    var = '\n'.join(unique_ips) if unique_ips else 'No Network'
-    print(var)
+    return '\n'.join(unique_ips) if unique_ips else 'No Network'
 
 
 def get_detailed_network_info():
