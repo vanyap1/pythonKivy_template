@@ -6,6 +6,9 @@ import pty
 import os, socket, re
 import random
 import json
+import platform
+import subprocess
+import shlex
 from urllib import request
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -48,6 +51,8 @@ class SystemParamObject:
         self.value = value
 
 remCtrlPort = 8080
+NOTES_FILE = "notes.txt"
+
 
 Builder.load_file('kv/bottomBar.kv')
 Builder.load_file('kv/popUp.kv')
@@ -147,7 +152,7 @@ class MainScreen(FloatLayout):
         
 
         ## Server start
-        self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self)
+        self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.httpServerCbFn, self)
         self.udpClient = UdpAsyncClient(self)
         self.udpClient.startListener(udpReportService.rx_port, self.serverUdpIncomingData)
         
@@ -232,20 +237,83 @@ class MainScreen(FloatLayout):
         except:
             print("Error in udp data")
     ##server handler CB function
-    def remCtrlCB(self, arg):
+    def httpServerCbFn(self, arg):
         #['', 'slot', '0', 'status']
-        request = arg.lower().split("/")
+
+        if(not arg.startswith("exec")):
+            request = arg.split("/")
+        else:
+            request = [arg]                       #Split request to array
         print("CB arg-", request )
-        if(request[0] == "run"):
-            ##self.backProc.setCmd("run")
-            self.backProc.startProc()
-            return self.backProc.getStatus()
+        if(request[0] == "test"):
+            return self.servReport.text
+        
         elif(request[0] == "stop"):
              self.backProc.stopProc()
              #self.backProc.setCmd("stop")
-             return self.backProc.getStatus()  
+             return self.backProc.getStatus()
+        elif request[0].startswith("getNotes"):
+            self.notes = self.load_notes_from_file()
+            return self.notes
+
+        elif request[0].startswith("saveNotes"):
+            notesContent = request[0].replace("saveNotes:", "", 1)
+            self.save_notes_to_file(notesContent)
+            return "OK"
+        elif request[0].startswith("exec"):
+            return self.execute_system_command(request[0].split("=")[1])
+          
         return "ok" 
     
+    def execute_system_command(self, command):
+        '''
+        Runs a system command on Linux.
+        '''
+        if platform.system().lower() != 'linux':
+            return "Error: Commands can only be executed on Linux systems"
+        if not command or command.strip() == "":
+            return "Error: Empty command"
+        forbidden_commands = ['rm', 'rmdir', 'del', 'format', 'fdisk', 'mkfs', 'dd', 'sudo', 'su']
+        first_word = command.strip().split()[0]
+        if first_word in forbidden_commands:
+            return f"Error: Command '{first_word}' is forbidden for security reasons"
+        try:
+            result = subprocess.run(
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False
+            )
+            output = ""
+            if result.stdout:
+                output += f"{result.stdout}\n"
+            if result.stderr:
+                output += f"{result.stderr}\n"
+            output += f"Return code: {result.returncode}"
+            return output
+        except subprocess.TimeoutExpired:
+            return "Error: Command timed out (30 seconds limit)"
+        except FileNotFoundError:
+            return f"Error: Command '{first_word}' not found"
+        except Exception as e:
+            return f"Error executing command: {str(e)}"
+
+
+    def load_notes_from_file(self):
+        """Завантажує нотатки з файлу, якщо файл існує."""
+        if os.path.exists(NOTES_FILE):
+            with open(NOTES_FILE, "r", encoding="utf-8") as file:
+                return file.read()
+        return "empty"
+
+    def save_notes_to_file(self, notes):
+        """Зберігає нотатки у файл."""
+        with open(NOTES_FILE, "w", encoding="utf-8") as file:
+            file.write(notes)
+
+
     def stop_server(self):
         if self.server:
             self.server.shutdown()

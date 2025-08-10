@@ -1,6 +1,8 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
 import os
+import urllib.parse
+
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, client_instance=None, clientCbFunction=None, **kwargs):
@@ -10,17 +12,30 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         # No logging
         return
-
+    
     def do_GET(self):
         if self.path == '/':
             self.path = '/index.html'
     
         file_path = os.path.join('remoteCtrlServer/html', self.path[1:])  # Remove leading '/' from path and prepend 'html/'
-        print(file_path)
+        #print(file_path)
         if self.client_instance:
             if self.path.startswith('/cmd:'):
+                
                 command = self.path[len('/cmd:'):]
-                result = self.clientCbFunction(command)
+
+                command = self.path[len('/cmd:'):]
+                decoded_command = urllib.parse.unquote(command)
+                print(f"Original command: {command}")
+                print(f"Decoded command: {decoded_command}")
+                
+                # Якщо команда починається з 'exec', не розбиваємо її на частини
+                if decoded_command.startswith('exec'):
+                    # Передаємо команду як один рядок
+                    result = self.clientCbFunction(decoded_command)
+                else:
+                    # Для інших команд можемо розбивати як раніше (якщо потрібно)
+                    result = self.clientCbFunction(decoded_command)
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
@@ -50,8 +65,6 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write("No client instance".encode('utf-8'))
-
-
 
 
 

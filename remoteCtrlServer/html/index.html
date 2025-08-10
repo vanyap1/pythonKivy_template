@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Command interface</title>
     <link rel="stylesheet" href="styles.css">
     <script>
         function sendCommand(command) {
             const commandText = document.getElementById('commandDropdown').value;
-            const slotName = document.getElementById('slotsDropdown').value;
+            //const slotName = document.getElementById('slotsDropdown').value;
             let url = '/cmd:';
-            if (slotName) {
-                url += slotName + '/';
-            }
+            //if (slotName) {
+            //    url += slotName + '/';
+            //}
             url += command;
             fetch(url)
                 .then(response => response.text())
@@ -29,7 +30,7 @@
             const command = document.getElementById('commandInput').value;
             const commandText = document.getElementById('commandDropdown').value;
 
-            if (commandText === 'cmd') {
+            if (commandText === 'cmd' || commandText === 'exec') {
                 if (command) {
                     sendCommand(commandText + '=' + command);
                     return;
@@ -37,9 +38,7 @@
                     sendCommand(commandText);
                     return;
                 }
-            } else if (commandText === 'cmd' || 
-            commandText === 'id' || 
-            commandText === 'tel') {
+            } else if (commandText === 'cmd' ||  commandText === 'id' ||  commandText === 'tel') {
                 if (command) {
                     sendCommand(commandText + '=' + command);
                     return;
@@ -55,24 +54,30 @@
         }
 
         function onButtonClick(buttonId) {
-            document.getElementById('commandDropdown').value = buttonId;
-            updateCommandExample();
+            //document.getElementById('commandDropdown').value = buttonId;
+            //updateCommandExample();
             sendCommand(buttonId);
         }
 
         function updateCommandExample() {
             const command = document.getElementById('commandInput').value;
             const commandText = document.getElementById('commandDropdown').value;
-            const slotName = document.getElementById('slotsDropdown').value;
+            //const slotName = document.getElementById('slotsDropdown').value;
             let example = '/cmd:';
-            if (slotName) {
-                example += slotName + '/';
-            }
+            //if (slotName) {
+            //    example += slotName + '/';
+            //}
             if (commandText === 'cmd' || 
             commandText === 'id' || 
             commandText === 'tel') {
                 if (command) {
                     example += commandText + '=' + command;
+                } else {
+                    example += commandText;
+                }
+            } else if (commandText === 'exec') {
+                if (command) {
+                    example += commandText + ' ' + command;
                 } else {
                     example += commandText;
                 }
@@ -90,21 +95,68 @@
                 button.innerText = 'Dark Mode';
             }
         }
+
+        function saveNotes() {
+            const notesContent = document.getElementById('notes').value;
+            const url = '/cmd:saveNotes:' + encodeURIComponent(notesContent);
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('result').innerText = 'Notes saved: ' + data;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Error saving notes: ' + error;
+                });
+        }
+
+        function loadNotes() {
+            const url = '/cmd:getNotes';
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('notes').value = data;
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Error loading notes: ' + error;
+                });
+        }
+
+        function toggleNotes() {
+            const content = document.getElementById('notesContent');
+            const icon = document.getElementById('notesToggleIcon');
+    
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                icon.classList.add('rotated');
+            } else {
+                content.style.display = 'none';
+                icon.classList.remove('rotated');
+            }
+        }
+
+function clearNotes() {
+    if (confirm('Are you sure you want to clear all notes?')) {
+        document.getElementById('notes').value = '';
+    }
+}
+        window.onload = loadNotes;
     </script>
 </head>
 
 <body class="dark-mode">
     <div class="container">
-        <h1>Lora commander</h1>
+        <h1>cmd server</h1>
         <div class="input-group">
+            <!--
             <select id="slotsDropdown" onchange="updateCommandExample()">
                 <option value="">none</option>
                 <option value="slot1">slot1</option>
                 <option value="slot2">slot2</option>
             </select>
+            -->
             <select id="commandDropdown" onchange="updateCommandExample()">
-                <option value="id">id beacon</option>
                 <option value="cmd">cmd</option>
+                <option value="exec">exec</option>
                 
                 
             </select>
@@ -120,13 +172,32 @@
             <h2 class="h2-info">Result:</h2>
             <pre id="result">No data</pre>
         </div>
+
+        <div class="notes-group">
+            <div class="notes-header" onclick="toggleNotes()">
+                <h2><i class="fas fa-sticky-note"></i> Notes</h2>
+                <i class="fas fa-chevron-down notes-toggle-icon" id="notesToggleIcon"></i>
+            </div>
+            <div class="notes-content" id="notesContent" style="display: none;">
+                <textarea id="notes" class="textarea-notes" placeholder="Write your notes here..."></textarea>
+                <div class="notes-controls">
+                    <button class="button-success" onclick="saveNotes()">
+                        <i class="fas fa-save"></i> Save Notes
+                    </button>
+                    <button class="button-secondary" onclick="clearNotes()">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
         
         <div class="button-group">
             <button class="button button-primary" onclick="onButtonClick('test')">Test</button>
-            <button class="button button-info" onclick="onButtonClick('timysync')">Time sync</button>
+            <button class="button button-info" onclick="onButtonClick('timesync')">Time sync</button>
             <button class="button button-warning" onclick="onButtonClick('ch=1;value=1')">Set IO</button>
             <button class="button button-warning" onclick="onButtonClick('ch=1;value=0')">Reset IO</button>
             <button class="button button-info" id="toggleDarkModeButton" onclick="toggleDarkMode()">Light Mode</button>
+            
         </div>
         
     </div>
