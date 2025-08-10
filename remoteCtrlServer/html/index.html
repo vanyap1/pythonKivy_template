@@ -11,7 +11,7 @@
         function sendCommand(command) {
             const commandText = document.getElementById('commandDropdown').value;
             //const slotName = document.getElementById('slotsDropdown').value;
-            let url = '/cmd:';
+            let url = '';
             //if (slotName) {
             //    url += slotName + '/';
             //}
@@ -32,38 +32,44 @@
 
             if (commandText === 'cmd' || commandText === 'exec') {
                 if (command) {
-                    sendCommand(commandText + '=' + command);
+                    sendCommand('/' + commandText + ':' + command);
                     return;
                 } else {
-                    sendCommand(commandText);
+                    sendCommand('/' + commandText);
                     return;
                 }
             } else if (commandText === 'cmd' ||  commandText === 'id' ||  commandText === 'tel') {
                 if (command) {
-                    sendCommand(commandText + '=' + command);
+                    sendCommand('/' + commandText + ':' + command);
                     return;
                 } else {
-                    sendCommand(commandText);
+                    sendCommand('/' + commandText);
                     return;
                 }
 
             } else {
-                sendCommand(commandText);
+                sendCommand('/' + commandText);
                 return;
             }
         }
 
         function onButtonClick(buttonId) {
-            //document.getElementById('commandDropdown').value = buttonId;
-            //updateCommandExample();
-            sendCommand(buttonId);
+            document.getElementById('commandInput').value = buttonId;
+            updateCommandExample();
+            sendCommand('/cmd:' + buttonId);
+        }
+
+        function executeCommand(command) {
+            let cmdLine = '/exec:' + command;
+            document.getElementById('commandExample').innerText = cmdLine;
+            sendCommand(cmdLine);
         }
 
         function updateCommandExample() {
             const command = document.getElementById('commandInput').value;
             const commandText = document.getElementById('commandDropdown').value;
             //const slotName = document.getElementById('slotsDropdown').value;
-            let example = '/cmd:';
+            let example = '/';
             //if (slotName) {
             //    example += slotName + '/';
             //}
@@ -71,13 +77,13 @@
             commandText === 'id' || 
             commandText === 'tel') {
                 if (command) {
-                    example += commandText + '=' + command;
+                    example += commandText + ':' + command;
                 } else {
                     example += commandText;
                 }
             } else if (commandText === 'exec') {
                 if (command) {
-                    example += commandText + ' ' + command;
+                    example += commandText + ':' + command;
                 } else {
                     example += commandText;
                 }
@@ -145,7 +151,7 @@ function clearNotes() {
 
 <body class="dark-mode">
     <div class="container">
-        <h1>cmd server</h1>
+        <h1>RemoteControl Center Pro</h1>
         <div class="input-group">
             <!--
             <select id="slotsDropdown" onchange="updateCommandExample()">
@@ -193,7 +199,7 @@ function clearNotes() {
         
         <div class="button-group">
             <button class="button button-primary" onclick="onButtonClick('test')">Test</button>
-            <button class="button button-info" onclick="onButtonClick('timesync')">Time sync</button>
+            <button class="button button-info" onclick="executeCommand('i2cdetect -y 2')">i2c Scan</button>
             <button class="button button-warning" onclick="onButtonClick('ch=1;value=1')">Set IO</button>
             <button class="button button-warning" onclick="onButtonClick('ch=1;value=0')">Reset IO</button>
             <button class="button button-info" id="toggleDarkModeButton" onclick="toggleDarkMode()">Light Mode</button>

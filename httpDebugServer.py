@@ -97,7 +97,7 @@ class Main:
             except Exception as e:
                 return ("Error reading from i2c")
         if request[0].startswith("exec"):
-            print(f"Executing system command: {request[0].split('=')[1]}")
+            print(f"Executing system command: {request[0]}")
             return self.execute_system_command(request[0].split("=")[1])
             
 
@@ -110,7 +110,7 @@ class Main:
             self.save_notes_to_file(notesContent)
             return "OK"
 
-        return "OK"
+        return "ERR 400: Undefined instruction"
 
     def execute_system_command(self, command):
         '''
@@ -133,7 +133,7 @@ class Main:
                 timeout=30,
                 check=False
             )
-            
+
             output = ""
             if result.stdout:
                 output += f"{result.stdout}\n"

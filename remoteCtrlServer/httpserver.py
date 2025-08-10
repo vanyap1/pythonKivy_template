@@ -22,20 +22,21 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         if self.client_instance:
             if self.path.startswith('/cmd:'):
                 
-                command = self.path[len('/cmd:'):]
-
+                print("Command received:", self.path)
                 command = self.path[len('/cmd:'):]
                 decoded_command = urllib.parse.unquote(command)
-                print(f"Original command: {command}")
-                print(f"Decoded command: {decoded_command}")
-                
-                # Якщо команда починається з 'exec', не розбиваємо її на частини
-                if decoded_command.startswith('exec'):
-                    # Передаємо команду як один рядок
-                    result = self.clientCbFunction(decoded_command)
-                else:
-                    # Для інших команд можемо розбивати як раніше (якщо потрібно)
-                    result = self.clientCbFunction(decoded_command)
+                result = self.clientCbFunction(decoded_command)
+               
+               
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(result.encode('utf-8'))
+
+            elif (self.path.startswith('/exec:') ):
+                command = self.path[len('/exec:'):]
+                decoded_command = urllib.parse.unquote(command)
+                result = self.clientCbFunction(f"exec:{decoded_command}")
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()

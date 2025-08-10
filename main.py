@@ -261,9 +261,12 @@ class MainScreen(FloatLayout):
             self.save_notes_to_file(notesContent)
             return "OK"
         elif request[0].startswith("exec"):
-            return self.execute_system_command(request[0].split("=")[1])
-          
-        return "ok" 
+            try:
+                return self.execute_system_command(request[0].split(":")[1])
+            except Exception as e:
+                return f"Error executing command: {str(e)}"
+    
+        return "ERR 400: Undefined instruction"
     
     def execute_system_command(self, command):
         '''
