@@ -86,7 +86,7 @@ class MainScreen(FloatLayout):
         
         Clock.schedule_interval(lambda dt: self.update_time(), 1)
 
-        
+    
         self.clock = Label(text='[color=ffffff]22:30:38[/color]', markup = True, font_size=100, pos=(-600, 500) , font_name='fonts/hemi_head_bd_it.ttf')
         self.add_widget(self.clock)
 

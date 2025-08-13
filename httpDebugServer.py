@@ -5,7 +5,7 @@ import re
 import json
 import glob
 from threading import Thread
-from smbus2 import SMBus, i2c_msg
+#from smbus2 import SMBus, i2c_msg
 import platform
 import subprocess
 import shlex
@@ -13,16 +13,16 @@ import shlex
 
 
 from remoteCtrlServer.httpserver import start_server_in_thread
-remCtrlPort = 8080
+remCtrlPort = 8081
 NOTES_FILE = "notes.txt"
-i2cBus = 2
+#i2cBus = 2
 
 
 class Main:
     def __init__(self):
         print("Run app...")
         self.server, self.server_thread = start_server_in_thread(remCtrlPort, self.remCtrlCB, self) #Start remote control server
-        self.bus = SMBus(i2cBus)
+        #self.bus = SMBus(i2cBus)
         self.notes = "empty"
         self.run()
     def run(self):
@@ -71,8 +71,8 @@ class Main:
                 return "Error converting to byte array"
     
             try:
-                write = i2c_msg.write(addr, byte_array)
-                self.bus.i2c_rdwr(write)
+                #write = i2c_msg.write(addr, byte_array)
+                #self.bus.i2c_rdwr(write)
                 return "Write successful"
             except Exception as e:
                 print("Error writing to i2c:", e)
@@ -90,15 +90,15 @@ class Main:
                 print("addr-", addr)
                 print("reg-" , reg)
                 print("len-" , cmdStr[3])    
-                read = self.bus.read_i2c_block_data(addr, reg, int(cmdStr[3]))
-                print("Read-", read)
+                #read = self.bus.read_i2c_block_data(addr, reg, int(cmdStr[3]))
+                #print("Read-", read)
 
                 return " ".join(f"{byte:02X}" for byte in list(read))
             except Exception as e:
                 return ("Error reading from i2c")
         if request[0].startswith("exec"):
             print(f"Executing system command: {request[0]}")
-            return self.execute_system_command(request[0].split("=")[1])
+            return self.execute_system_command(request[0].split(":")[1])
             
 
         if request[0].startswith("getNotes"):
