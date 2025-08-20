@@ -83,6 +83,13 @@
             document.getElementById('commandExample').innerText = cmdLine;
             sendCommand(cmdLine);
         }
+        
+        function sendConsoleCommand() {
+            const cmd = document.getElementById('consoleInput').value;
+            if (cmd.trim() === '') return;
+            sendCommand('/exec:' + cmd);
+            document.getElementById('consoleInput').value = '';
+        }
 
         function updateCommandExample() {
             const command = document.getElementById('commandInput').value;
@@ -193,11 +200,28 @@ function clearNotes() {
             <h2 class="h2-success">Command example:</h2>
             <pre id="commandExample">/cmd:</pre>
         </div>
-        <div class="result-group">
-            <h2 class="h2-info">Result:</h2>
+        
+
+        <div class="console-group">
             <pre id="result">No data</pre>
+            <div class="console-input-row">
+                <input type="text" id="consoleInput" class="console-input" placeholder="Type command here..." onkeydown="if(event.key==='Enter'){sendConsoleCommand();}">
+                <button class="console-btn" onclick="sendConsoleCommand()">
+                <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
         </div>
 
+        
+        
+        <div class="button-group">
+            <button class="button button-primary" onclick="onButtonClick('test')">Test</button>
+            <button class="button button-info" onclick="executeCommand('i2cdetect -y 2')">i2c Scan</button>
+            <button class="button button-warning" onclick="onButtonClick('ch=1;value=1')">Set IO</button>
+            <button class="button button-warning" onclick="onButtonClick('ch=1;value=0')">Reset IO</button>
+            <button class="button button-info" id="toggleDarkModeButton" onclick="toggleDarkMode()">Light Mode</button>
+            
+        </div>
         <div class="notes-group">
             <div class="notes-header" onclick="toggleNotes()">
                 <h2><i class="fas fa-sticky-note"></i> Notes</h2>
@@ -215,16 +239,6 @@ function clearNotes() {
                 </div>
             </div>
         </div>
-        
-        <div class="button-group">
-            <button class="button button-primary" onclick="onButtonClick('test')">Test</button>
-            <button class="button button-info" onclick="executeCommand('i2cdetect -y 2')">i2c Scan</button>
-            <button class="button button-warning" onclick="onButtonClick('ch=1;value=1')">Set IO</button>
-            <button class="button button-warning" onclick="onButtonClick('ch=1;value=0')">Reset IO</button>
-            <button class="button button-info" id="toggleDarkModeButton" onclick="toggleDarkMode()">Light Mode</button>
-            
-        </div>
-        
         <div class="upload-group" style="margin-top: 20px;">
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="file" id="calibFile" name="calibFile" />
