@@ -25,7 +25,26 @@
                     document.getElementById('result').innerText = 'Error: ' + error;
                 });
         }
-
+        function uploadCalibFile() {
+        const fileInput = document.getElementById('calibFile');
+        if (fileInput.files.length === 0) {
+            document.getElementById('uploadResult').innerText = 'No file selected';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('calibFile', fileInput.files[0]);
+        fetch('/upload_calib', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('uploadResult').innerText = data;
+        })
+        .catch(error => {
+            document.getElementById('uploadResult').innerText = 'Error: ' + error;
+        });
+        }
         function onOkButtonClick() {
             const command = document.getElementById('commandInput').value;
             const commandText = document.getElementById('commandDropdown').value;
@@ -206,6 +225,13 @@ function clearNotes() {
             
         </div>
         
+        <div class="upload-group" style="margin-top: 20px;">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="calibFile" name="calibFile" />
+                <button type="button" class="button button-success" onclick="uploadCalibFile()">Upload Calibration</button>
+            </form>
+        <div id="uploadResult"></div>
+</div>
     </div>
 </body>
 

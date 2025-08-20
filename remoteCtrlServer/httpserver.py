@@ -227,7 +227,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
-        
+
         elif self.path == '/rf_output':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -370,40 +370,52 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
         
-        else:
-            # Original file upload logic
+        elif self.path == '/upload_calib':
             content_length = int(self.headers['Content-Length'])
-            boundary = self.headers['Content-Type'].split("=")[1].encode()
-            line = self.rfile.readline()
-            content_length -= len(line)
-            
-            if boundary in line:
+            content_type = self.headers.get('Content-Type', '')
+            # Перевірка на multipart/form-data
+            if 'multipart/form-data' in content_type and 'boundary=' in content_type:
+                boundary = content_type.split("boundary=")[1].encode()
                 line = self.rfile.readline()
                 content_length -= len(line)
-                filename = line.split(b'filename=')[1].split(b'"')[1].decode()
-
-                # Skip headers
-                while line.strip():
+                
+                if boundary in line:
                     line = self.rfile.readline()
                     content_length -= len(line)
+                    # Витягуємо ім'я файлу
+                    filename = line.split(b'filename=')[1].split(b'"')[1].decode()
 
-                # Save file
-                with open(os.path.join('./uploads', filename), 'wb') as f:
-                    preline = self.rfile.readline()
-                    content_length -= len(preline)
-                    while content_length > 0:
+                    # Пропускаємо заголовки
+                    while line.strip():
                         line = self.rfile.readline()
                         content_length -= len(line)
-                        if boundary in line:
-                            preline = preline[:-1]  # Remove trailing \r\n
-                            f.write(preline)
-                            break
-                        else:
-                            f.write(preline)
-                            preline = line
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'File uploaded successfully')
+
+                    # Зберігаємо файл
+                    os.makedirs('./uploads', exist_ok=True)
+                    with open(os.path.join('./uploads', filename), 'wb') as f:
+                        preline = self.rfile.readline()
+                        content_length -= len(preline)
+                        while content_length > 0:
+                            line = self.rfile.readline()
+                            content_length -= len(line)
+                            if boundary in line:
+                                preline = preline[:-1]  # Видаляємо \r\n
+                                f.write(preline)
+                                break
+                            else:
+                                f.write(preline)
+                                preline = line
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(b'File uploaded successfully')
+                else:
+                    self.send_response(400)
+                    self.end_headers()
+                    self.wfile.write(b'Invalid file upload request')
+            else:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b'Invalid Content-Type for file upload')
 
 class RemoteController:
     def __init__(self, port, cbFunction, main_screen_instance):

@@ -305,6 +305,48 @@ li {
     margin-bottom: 10px;
 }
 
+/* Стилі для блоку завантаження файлу */
+.upload-group {
+    margin-top: 24px;
+    margin-bottom: 20px;
+    padding: 18px 0;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+.upload-group form {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.upload-group input[type="file"] {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #bbb;
+    background: #fff;
+    color: #333;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.upload-group button {
+    padding: 8px 18px;
+    font-size: 15px;
+}
+
+.upload-group #uploadResult {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #28a745;
+    font-weight: 500;
+}
+
 /* Темна тема */
 body.dark-mode {
     background-color: #121212;
@@ -437,4 +479,20 @@ body.dark-mode .textarea-notes:focus {
     background-color: #2a2a2a;
     border-color: #00ff7f;
     box-shadow: 0 0 5px rgba(0, 255, 127, 0.3);
+}
+
+/* Темна тема для блоку завантаження файлу */
+body.dark-mode .upload-group {
+    background-color: #232323;
+    border-color: #444;
+}
+
+body.dark-mode .upload-group input[type="file"] {
+    background: #333;
+    color: #e0e0e0;
+    border: 1px solid #555;
+}
+
+body.dark-mode .upload-group #uploadResult {
+    color: #03dac6;
 }
