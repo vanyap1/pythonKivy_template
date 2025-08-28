@@ -1,1 +1,1 @@
-Hello GD25Q256! Test string from Orange Pi 3B. Current time: Fri Aug  1 12:26:39 PM EEST 2025
+test

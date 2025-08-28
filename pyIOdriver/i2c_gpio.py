@@ -202,7 +202,7 @@ class I2CGPIOController(Thread):
         """
         if value not in (0, 1):
             raise ValueError("Unexpected output value must be either 0 or 1")
-        if value == 1:
+        if value == 0:
             io.expander.outputBuff[io.portNum] |= (1 << io.pinNum)
         else:
             io.expander.outputBuff[io.portNum] &= ~(1 << io.pinNum)
@@ -253,6 +253,7 @@ class I2CGPIOController(Thread):
                     try:
                         hwExpander.inputBuff = self.bus.read_i2c_block_data(hwExpander.addr, 0, len(hwExpander.inputBuff))
                         self.bus.write_i2c_block_data(hwExpander.addr, 0x02, hwExpander.outputBuff)
+                        
                     except:
                         print(f"i2c device {hwExpander.addr} error")
                     #
@@ -263,3 +264,77 @@ class I2CGPIOController(Thread):
                     
                     print("Undefined board type")
             time.sleep(0.1)
+
+if __name__ == "__main__":
+    i2cBus = 0
+    # Define two expanders
+    
+    gpio = I2CGPIOController(i2cBus)
+    expander1 = Expander(Expander.PCA9535)
+    
+    in0 = IO(expander = expander1, portNum = 0, pinNum = 0, pinDir=DIR.INPUT)
+    in1 = IO(expander = expander1, portNum = 0, pinNum = 1, pinDir=DIR.INPUT)
+    in2 = IO(expander = expander1, portNum = 0, pinNum = 2, pinDir=DIR.INPUT)
+    in3 = IO(expander = expander1, portNum = 0, pinNum = 3, pinDir=DIR.INPUT)
+    in4 = IO(expander = expander1, portNum = 0, pinNum = 4, pinDir=DIR.INPUT)
+    in5 = IO(expander = expander1, portNum = 0, pinNum = 5, pinDir=DIR.INPUT)
+    in6 = IO(expander = expander1, portNum = 0, pinNum = 6, pinDir=DIR.INPUT)
+    in7 = IO(expander = expander1, portNum = 0, pinNum = 7, pinDir=DIR.INPUT)
+
+
+    rel0 = IO(expander = expander1, portNum = 1, pinNum = 0, pinDir=DIR.OUTPUT)
+    rel1 = IO(expander = expander1, portNum = 1, pinNum = 1, pinDir=DIR.OUTPUT)
+    rel2 = IO(expander = expander1, portNum = 1, pinNum = 2, pinDir=DIR.OUTPUT)
+    rel3 = IO(expander = expander1, portNum = 1, pinNum = 3, pinDir=DIR.OUTPUT)
+    rel4 = IO(expander = expander1, portNum = 1, pinNum = 4, pinDir=DIR.OUTPUT)
+    rel5 = IO(expander = expander1, portNum = 1, pinNum = 5, pinDir=DIR.OUTPUT)
+    rel6 = IO(expander = expander1, portNum = 1, pinNum = 6, pinDir=DIR.OUTPUT)
+    rel7 = IO(expander = expander1, portNum = 1, pinNum = 7, pinDir=DIR.OUTPUT)
+
+
+
+    gpio.setPinDirection(in0, DIR.INPUT)
+    gpio.setPinDirection(in1, DIR.INPUT)
+    gpio.setPinDirection(in2, DIR.INPUT)
+    gpio.setPinDirection(in3, DIR.INPUT)
+    gpio.setPinDirection(in4, DIR.INPUT)
+    gpio.setPinDirection(in5, DIR.INPUT)
+    gpio.setPinDirection(in6, DIR.INPUT)
+    gpio.setPinDirection(in7, DIR.INPUT)
+
+    gpio.setPinDirection(rel0, DIR.OUTPUT)
+    gpio.setPinDirection(rel1, DIR.OUTPUT)
+    gpio.setPinDirection(rel2, DIR.OUTPUT)
+    gpio.setPinDirection(rel3, DIR.OUTPUT)
+    gpio.setPinDirection(rel4, DIR.OUTPUT)
+    gpio.setPinDirection(rel5, DIR.OUTPUT)
+    gpio.setPinDirection(rel6, DIR.OUTPUT)
+    gpio.setPinDirection(rel7, DIR.OUTPUT)
+
+    # Add expanders to the controller
+    gpio.addExpandersInfo(expander1)
+
+    gpio.startController()
+    
+    while (True):
+        time.sleep(0.5)
+        gpio.pinWrite(rel0, 1)
+        gpio.pinWrite(rel1, 1)
+        gpio.pinWrite(rel2, 1)
+        gpio.pinWrite(rel3, 1)
+        gpio.pinWrite(rel4, 1)
+        gpio.pinWrite(rel5, 1)
+        gpio.pinWrite(rel6, 1)
+        gpio.pinWrite(rel7, 1)
+        time.sleep(0.5)
+        gpio.pinWrite(rel0, 0)
+        gpio.pinWrite(rel1, 0)
+        gpio.pinWrite(rel2, 0)
+        gpio.pinWrite(rel3, 0)
+        gpio.pinWrite(rel4, 0)
+        gpio.pinWrite(rel5, 0)
+        gpio.pinWrite(rel6, 0)
+        gpio.pinWrite(rel7, 0)
+        
+        print(gpio.pinRead(in1))
+
