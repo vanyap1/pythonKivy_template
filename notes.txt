@@ -1,3 +1,4 @@
-testfff
-jhhhhhhh
-test
+apt install i2c-tools
+i2cdetect -l
+i2cdetect -y 0
+i2cset -y 0 0x27 0x01 0x0f
