@@ -1,6 +1,7 @@
 import socket
 import json
 import threading
+import time
 
 """
 Usage example:
@@ -74,3 +75,14 @@ class UdpAsyncClient:
             self.sock.sendto(data, (ip, port))
         except Exception as e:
             print(f"Error sending data: {e}")
+
+def udpClient(data):
+    print(f'Sending UDP data: {data}')
+
+if __name__ == "__main__":
+    udp_сlient = UdpAsyncClient(None)
+    
+    
+    udp_сlient.startListener(5006, udpClient)
+    while True:
+        time.sleep(1)
