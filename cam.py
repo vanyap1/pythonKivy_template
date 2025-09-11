@@ -31,7 +31,7 @@ class Main:
         self.camXpos = 0
         self.camYpos = 1000
         self.home = False
-        self.ser = serial.Serial(port="/dev/ttyS0",baudrate=115200, timeout=1)
+        self.ser = serial.Serial(port="/dev/ttyS1",baudrate=115200, timeout=1)
         while True:
             #print("cam running...")
             if (self.home):   
