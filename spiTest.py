@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     # Записуємо через CS0 (/dev/spidev3.0)
     while True:
-        spi_write(3, 0, data_to_write)
+        spi_write(1, 1, data_to_write)
         time.sleep(0.1)
 
 
