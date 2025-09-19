@@ -1,0 +1,4 @@
+
+
+
+sudo dtc -I dts -O dtb -o /boot/dtb/rockchip/rk3566-orangepi-3b-v2.1.dtb rk3566-orangepi-3b-v2.1.dts
