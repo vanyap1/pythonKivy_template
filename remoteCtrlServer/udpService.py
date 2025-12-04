@@ -45,7 +45,6 @@ class UdpAsyncClient:
             try:
                 data, _ = self.sock.recvfrom(self.bufferSize)
                 message = data.decode('utf-8')
-                
                 try:
                     #json_data = json.loads(message)
                     self.parrentCb(message)
@@ -54,6 +53,8 @@ class UdpAsyncClient:
                 
             except Exception:
                 pass
+            time.sleep(0.1)
+
 
     def stopListener(self):
         self.listening = False
