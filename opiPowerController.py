@@ -150,7 +150,7 @@ if __name__ == "__main__":
     def error_callback(msg):
         print(f"{msg}")
 
-    psu = OpiPSU("/dev/ttyS1", 250000, error_callback)
+    psu = OpiPSU("/dev/ttyS7", 250000, error_callback)
     try:
         while True:
             if(psu.isDataValid()):
