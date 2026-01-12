@@ -1,0 +1,12 @@
+Dependency:
+     sudo apt install -y gcc
+
+
+Compilation: 
+     cpp -nostdinc -undef -D__DTS__ -x assembler-with-cpp -I . -I include myboard.dts | dtc -I dts -O dtb -o myboard.dtb
+     sudo cp myboard.dtb /boot/dtb/
+     
+
+
+Decompile dtb
+    dtc -I dtb -O dts -o h3_my2.dts myboard.dtb
