@@ -252,16 +252,31 @@
     };
 };
 
+&ccu {
+        assigned-clocks = <&ccu 107>;
+        assigned-clock-parents = <&osc24M>;
+        assigned-clock-rates = <24000000>;
+};
+&pio {
+        csi_mclk_pin: csi-mclk-pin {
+                pins = "PE1";
+                function = "csi";
+        };
+};
+
+
 &i2c2 {
     pinctrl-names = "default";
     pinctrl-0 = <&i2c2_pins>;
     status = "okay";
 
-    ov2640: camera@30 {
-        compatible = "ovti,ov2640";
-        reg = <0x30>;
+    ov5640: camera@3C {
+        compatible = "ovti,ov5640";
+        reg = <0x3C>;
         clocks = <&ccu CLK_CSI_MCLK>;
         clock-names = "xclk";
+        pinctrl-names = "default";
+        pinctrl-0 = <&csi_mclk_pin>;
         
         reset-gpios = <&pio 4 14 GPIO_ACTIVE_LOW>; /* PE14 */
         powerdown-gpios = <&pio 4 15 GPIO_ACTIVE_HIGH>; /* PE15 */
@@ -271,13 +286,14 @@
         DVDD-supply = <&reg_vcc3v3>;
 
         port {
-            ov2640_ep: endpoint {
+            ov5640_ep: endpoint {
+                reg = <0>;
                 remote-endpoint = <&csi_ep>;
                 bus-width = <8>;
-                hsync-active = <1>;
-                vsync-active = <0>;
-                data-active = <1>;
-                pclk-sample = <1>;
+
+                hsync-active = <0>;
+                vsync-active = <1>;
+                pclk-sample  = <1>;
             };
         };
     };
@@ -290,12 +306,13 @@
 
     port {
         csi_ep: endpoint {
-            remote-endpoint = <&ov2640_ep>;
+            reg = <0>;
+            remote-endpoint = <&ov5640_ep>;
             bus-width = <8>;
-            hsync-active = <1>;
-            vsync-active = <0>;
-            data-active = <1>;
-            pclk-sample = <1>;
+
+            hsync-active = <0>;
+            vsync-active = <1>;
+            pclk-sample  = <1>;
         };
     };
 };

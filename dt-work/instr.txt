@@ -10,3 +10,12 @@ Compilation:
 
 Decompile dtb
     dtc -I dtb -O dts -o h3_my2.dts myboard.dtb
+
+    media-ctl -d /dev/media1 -V "'ov5640 0-003c':0 [fmt:UYVY8_2X8/640x480 field:none]"
+    media-ctl -d /dev/media1 -V "'sun6i-csi-bridge':0 [fmt:UYVY8_2X8/640x480 field:none]"
+    media-ctl -d /dev/media1 -V "'sun6i-csi-bridge':1 [fmt:UYVY8_2X8/640x480 field:none]"
+
+    v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=UYVY
+    v4l2-ctl -d /dev/video1 --stream-mmap --stream-count=1 --stream-to=test_final.raw
+
+    fswebcam -d /dev/video1 -r 640x480 -D 0 --jpeg 100 test.jpg
