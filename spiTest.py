@@ -1,10 +1,23 @@
 import spidev
 import time
+import gpiod
+
+
 '''
 
 sudo apt install python3-spidev
 
 '''
+gpioChip0 = gpiod.Chip("gpiochip0") # GPIOL11
+gpioChip1 = gpiod.Chip("gpiochip1") # GPIOG11
+
+
+spi_CS = gpioChip0.get_line(203)  # GPIOG11
+spi_DC = gpioChip1.get_line(11)  # GPIOL11
+
+spi_CS.request(consumer="test", type=gpiod.LINE_REQ_DIR_OUT)
+spi_DC.request(consumer="test", type=gpiod.LINE_REQ_DIR_OUT)
+
 def spi_write(bus, device, data, speed_hz=500000):
     spi = spidev.SpiDev()
     spi.open(bus, device)           # bus=3, device=0 або device=1
@@ -24,7 +37,11 @@ if __name__ == "__main__":
 
     # Записуємо через CS0 (/dev/spidev3.0)
     while True:
-        spi_write(1, 0, data_to_write)
+        spi_DC.set_value(1)
+        time.sleep(0.1)
+        spi_DC.set_value(0)
+
+        spi_write(1, 1, data_to_write)
         time.sleep(0.1)
 
 

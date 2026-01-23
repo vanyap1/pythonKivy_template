@@ -15,11 +15,31 @@ from remoteCtrlServer.httpserver import start_server_in_thread
 import serial
 
 NOTES_FILE = "notesCam.txt"
+CAM_COORDINATES_FILE = "cam_coordinates.json"
 xMax = 10000
 xMin = 0
 yMax = 10000
 yMin = 0
 
+
+
+cameraPositions = {
+    "0": (3700, 2120),
+    "1": (0, 0),
+    "2": (7400, 0),
+    "3": (0, 4240),
+    "4": (7400, 4240),
+    "5": (3700, 2120),
+    "6": (0, 0),
+    "7": (7400, 0),
+    "8": (0, 4240)
+}
+
+
+
+# Camera center positions:
+# X 3700
+# Y 2120
 
 class Main:
     def __init__(self):
@@ -27,19 +47,56 @@ class Main:
         
     
     def start(self):
+        if os.path.exists(CAM_COORDINATES_FILE):
+            try:
+                with open(CAM_COORDINATES_FILE, "r", encoding="utf-8") as file:
+                    loaded_data = json.load(file)
+                    # Конвертуємо масиви з JSON назад у кортежі
+                    cameraPositions = {key: tuple(value) if isinstance(value, list) else value 
+                                   for key, value in loaded_data.items()}
+                    print("Loaded camera coordinates:", cameraPositions)
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"Error loading camera coordinates: {e}. Using default positions.")
+                self._save_camera_positions()
+        else:
+            print("Camera coordinates file not found. Creating with default positions.")
+            self._save_camera_positions()
+
+        
         self.server, self.server_thread = start_server_in_thread(8080, self.httpServerCbFn, self)
         self.camXpos = 0
         self.camYpos = 1000
         self.home = False
+        self.setMemFlg = False
         self.ser = serial.Serial(port="/dev/ttyS1",baudrate=115200, timeout=1)
+        
+        print("Camera houming controller running...")
+        self.ser.write("G28\n".encode())
+        #time.sleep(5)
+        print("Camera run to center position...")
+        self.camXpos = 3700
+        self.camYpos = 2120
+        self.ser.write(f"G1 X{self.camXpos} Y{self.camYpos}\n".encode())
+        self.home = True
+        
         while True:
-            #print("cam running...")
-            if (self.home):   
-                #self.ser.write(f"G1 X{self.camXpos} Y{self.camYpos}\n".encode())
-                #response = self.ser.readline().decode().strip()
-                print(f"G1 X{self.camXpos} Y{self.camYpos}\n")
-            time.sleep(1)
+            #if (self.home):   
+            #    print(f"G1 X{self.camXpos} Y{self.camYpos}")
+            time.sleep(0.25)
 
+
+    
+    def _save_camera_positions(self):
+        """Зберігає поточні позиції камери у файл."""
+        with open(CAM_COORDINATES_FILE, "w", encoding="utf-8") as file:
+            json.dump(cameraPositions, file, indent=4, ensure_ascii=False)
+            print("Saved camera coordinates to file.")
+    
+    def setMemory(self, slotNum):
+        print("Set memory:", slotNum)
+        cameraPositions[slotNum] = (self.camXpos, self.camYpos)
+        self._save_camera_positions()
+        return "Complete. Saved position: " + str(cameraPositions[slotNum])
 
 
 
@@ -54,6 +111,27 @@ class Main:
         if(request[0] == "test"):
             return self.servReport.text
         
+        elif(request[0].startswith("mem")):
+            memSlot = request[0].split(":")[1]
+            if (self.setMemFlg):
+                self.setMemory(memSlot)
+                self.setMemFlg = False
+                return f"Memory slot {memSlot} saved"
+            else:
+
+                pos = cameraPositions.get(memSlot, (0,0))
+                print("Moving to position:", pos)
+                self.camXpos, self.camYpos = pos
+                self.ser.write(f"G1 X{self.camXpos} Y{self.camYpos}\n".encode())
+                return f"Camera moved to memory slot {memSlot} position: X={self.camXpos}, Y={self.camYpos}"
+            
+        elif(request[0].startswith("setMem")):
+            self.setMemFlg = not self.setMemFlg
+            if (self.setMemFlg):
+                return "Select memory slot to save current position"
+            else:
+                return "Memory saving cancelled"
+
         elif(request[0].startswith("X+")):
             if self.camXpos + int(request[0].replace("X+", "", 1)) <= xMax:
                 self.camXpos += int(request[0].replace("X+", "", 1))
