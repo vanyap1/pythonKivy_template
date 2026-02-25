@@ -31,6 +31,32 @@
             document.getElementById('uploadResult').innerText = 'No file selected';
             return;
         }
+
+        function downloadCalibFile() {
+            //download file from server http://localhost:8000/get_calib_file
+            //the server wil retunt file - calibration.s2p
+            fetch('/get_calib_file')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'calibration.s2p';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    document.getElementById('uploadResult').innerText = 'Error: ' + error;
+                }); 
+        }
+
         const formData = new FormData();
         formData.append('calibFile', fileInput.files[0]);
         fetch('/upload_calib', {
@@ -243,6 +269,7 @@ function clearNotes() {
             <form id="uploadForm" enctype="multipart/form-data">
                 <input type="file" id="calibFile" name="calibFile" />
                 <button type="button" class="button button-success" onclick="uploadCalibFile()">Upload Calibration</button>
+                <button type="button" class="button button-success" onclick="downloadCalibFile()">Download Calibration</button>
             </form>
         <div id="uploadResult"></div>
 </div>

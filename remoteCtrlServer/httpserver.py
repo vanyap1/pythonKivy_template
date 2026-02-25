@@ -138,6 +138,22 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 }
                 
                 self.wfile.write(json.dumps(status_data).encode('utf-8'))
+            
+            elif self.path.startswith('/get_calib_file'):
+            #return file - ./uploads/calibration.s2p
+                file_path = './uploads/calibration.s2p'
+                if os.path.isfile(file_path):
+                    self.send_response(200)
+                    self.send_header('Content-type', 'application/octet-stream')
+                    self.send_header('Content-Disposition', 'attachment; filename="calibration.s2p"')
+                    self.end_headers()
+                    with open(file_path, 'rb') as file:
+                        self.wfile.write(file.read())
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+                    self.wfile.write(b'Calibration file not found')
+
                 
 
             elif os.path.isfile(file_path):
@@ -262,6 +278,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
         
+
         elif self.path == '/frequency':
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -370,6 +387,8 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
         
+
+
         elif self.path == '/upload_calib':
             content_length = int(self.headers['Content-Length'])
             content_type = self.headers.get('Content-Type', '')
