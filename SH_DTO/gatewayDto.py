@@ -57,6 +57,14 @@ class GatewayDto:
         self.kotelTemStop: int = 0
         self.kotelTemDelta: int = 0
 
+        # Main Inverter values
+        self.inverterPower: float = 0.0 
+        self.inverterSoc: int = 0
+        self.inverterTemp: int = 0
+        self.inverterStatus: int = 0
+        self.inverterCurrent: float = 0.0
+        self.inverterVoltage: float = 0.0
+
 
     def canMsgParse(self, can_message):
         # Відомі CAN ID

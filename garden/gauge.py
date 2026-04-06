@@ -44,8 +44,9 @@ class Gauge(Widget):
 
     '''
     graduationStepAngle = NumericProperty(2.25) # Кут повороту голки на одиницю виміру 
-    unit = NumericProperty(1)  
-    value = BoundedNumericProperty(0, min=0, max=100, errorvalue=0)
+    unit = NumericProperty(1)
+    offset = NumericProperty(0)  
+    value = BoundedNumericProperty(0, min=-100, max=100, errorvalue=0)
     path = dirname(abspath(__file__))
     file_gauge = StringProperty(join(path, "assets/gaugeBG2.png"))
     file_needle = StringProperty(join(path, "assets/needleB.png"))
@@ -145,7 +146,7 @@ class Gauge(Widget):
         self._needle.center_y = self._gauge.center_y
         #self._needle.rotation = (50 * self.unit) - (self.value * self.unit)
 
-        self._needle.rotation = 135 - (self.value * self.graduationStepAngle)
+        self._needle.rotation = 135 - ((self.value + self.offset) * self.graduationStepAngle)
 
         self._glab.text = f"[b]{self.value:.1f} {self.units}[/b]"
         self._meterType.text = f"[b]{self.meterType}[/b]"

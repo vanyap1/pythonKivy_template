@@ -4,7 +4,7 @@ SERVICE_NAME="guiService"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 PROJECT_DIR="/home/vanya/pythonKivy_template"
 PYTHON_EXEC="/usr/bin/python3"
-MAIN_SCRIPT="main.py"
+MAIN_SCRIPT="SHsystemMonitoring.py"
 
 function create_service {
     echo "Creating service file..."
