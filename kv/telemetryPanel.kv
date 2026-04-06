@@ -1,0 +1,36 @@
+#:import rgb kivy.utils.get_color_from_hex
+
+<TelemetrySection@BoxLayout>:
+    orientation: 'vertical'
+    padding: 5
+    spacing: 2
+    canvas.before:
+        Color:
+            rgba: 0.1, 0.1, 0.15, 0.8
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [8]
+        Color:
+            rgba: rgb('445566')
+        Line:
+            rounded_rectangle: self.x, self.y, self.width, self.height, 8
+            width: 1.2
+
+<TelemetryLabel@Label>:
+    font_size: 11
+    size_hint_y: None
+    height: 18
+    halign: 'left'
+    text_size: self.width, None
+    padding: 5, 0
+    color: rgb('DDDDDD')
+
+<TelemetrySectionTitle@Label>:
+    font_size: 14
+    size_hint_y: None
+    height: 22
+    halign: 'center'
+    markup: True
+    bold: True
+    color: rgb('FFFFFF')
