@@ -80,3 +80,4 @@ flash_dump.bin
 readback*.txt
 strings_output.txt
 gd25q256_dump.bin
+__pycache__
