@@ -664,13 +664,71 @@ class MainScreen(FloatLayout):
 
 
 
+class ScaledRoot(FloatLayout):
+    """Root widget that scales content from 800x480 to actual screen size"""
+    def __init__(self, **kwargs):
+        super(ScaledRoot, self).__init__(**kwargs)
+        
+        # Target design resolution
+        self.design_width = 1024
+        self.design_height = 600
+        
+        # Create the main screen
+        self.main_screen = MainScreen()
+        
+        # Wrap in ScatterLayout for scaling
+        self.scatter = ScatterLayout(
+            do_rotation=False,
+            do_translation=False,
+            do_scale=False,
+            size=(self.design_width, self.design_height),
+            size_hint=(None, None)
+        )
+        
+        self.scatter.add_widget(self.main_screen)
+        self.add_widget(self.scatter)
+        
+        # Bind to window size changes
+        Window.bind(size=self.adjust_scale)
+        self.adjust_scale(None, Window.size)
+    
+    def adjust_scale(self, instance, value):
+        """Automatically scale content to fit window"""
+        window_width, window_height = value
+        
+        # Calculate scale factors
+        scale_x = window_width / self.design_width
+        scale_y = window_height / self.design_height
+        
+        # Use uniform scaling (smallest scale to fit everything)
+        scale = min(scale_x, scale_y)
+        
+        # Apply scale to scatter
+        self.scatter.scale = scale
+        
+        # Center the scaled content
+        scaled_width = self.design_width * scale
+        scaled_height = self.design_height * scale
+        
+        self.scatter.pos = (
+            (window_width - scaled_width) / 2,
+            (window_height - scaled_height) / 2
+        )
+        
+        # Update main screen size
+        self.main_screen.size = (self.design_width, self.design_height)
+
+
 class BoxApp(App):
     def build(self):
-        self.screen = MainScreen()
-        return self.screen
+        # Set window size if needed (optional, will use system default)
+        # Window.size = (1920, 1080)
+        
+        self.root_widget = ScaledRoot()
+        return self.root_widget
     
     def on_stop(self):
-        self.screen.stop_server()
+        self.root_widget.main_screen.stop_server()
         pass
 
 
