@@ -65,6 +65,10 @@ class GatewayDto:
         self.inverterCurrent: float = 0.0
         self.inverterVoltage: float = 0.0
 
+        # Online checker timestamps
+        self.serverLastPingTimestamp: int = 0
+        self.googlePingLastTimestamp: int = 0
+
 
     def canMsgParse(self, can_message):
         # Відомі CAN ID
@@ -82,7 +86,7 @@ class GatewayDto:
             self.coolantTemperature = temps[2] / 10.0
             self.solarCollectorTemp = temps[3] / 10.0
 
-        if(can_message.can_id == 0x069):
+        elif(can_message.can_id == 0x069):
             import time
             current_time = int(time.time() * 1000)
     
@@ -288,7 +292,7 @@ class GatewayDto:
     def getAll(self) -> dict:
         """Повернути всі дані у вигляді словника"""
         return {
-            "timeStamp": self.timeStamp,
+            #"timeStamp": self.timeStamp,
             "digitalIn": self.digitalIn,
             "digitalOut": self.digitalOut,
             "upsMsgTimestamp": self.upsMsgTimestamp,
@@ -324,7 +328,22 @@ class GatewayDto:
             "kotelTemHi": self.kotelTemHi,
             "kotelTemRun": self.kotelTemRun,
             "kotelTemStop": self.kotelTemStop,
-            "kotelTemDelta": self.kotelTemDelta
+            "kotelTemDelta": self.kotelTemDelta,
+            "serverLastPingTimestamp": self.serverLastPingTimestamp,
+            "googlePingLastTimestamp": self.googlePingLastTimestamp
+        }
+    #Return differense current timestamp and last update timestamp for each section listed in getAll()
+    def getLastUpdateIntervals(self) -> dict:
+        """Повернути інтервали часу з останнього оновлення для кожного розділу"""
+        import time
+        current_time = int(time.time() * 1000)
+        return {
+            "upsMsgInterval": current_time - self.upsMsgTimestamp,
+            "waterTankMsgInterval": current_time - self.waterTankMsgTimestamp,
+            "sensorUnitMsgInterval": current_time - self.sensorUnitMsgTimestamp,
+            "kotelMsgInterval": current_time - self.kotelMsgTimestamp,
+            "serverPingInterval": current_time - self.serverLastPingTimestamp,
+            "googlePingInterval": current_time - self.googlePingLastTimestamp
         }
     
     def __str__(self) -> str:
