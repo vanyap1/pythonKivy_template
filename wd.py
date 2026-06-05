@@ -70,7 +70,6 @@ for name, line in in_lines.items():
 
 
 class Main():
-    msgStopEmuTimer = 0
     def __init__(self):
         self.lastGatewayReboot = 0.0
         self.lastSwitchReboot = 0.0
@@ -106,18 +105,17 @@ class Main():
                         self.MsgTimers["kotelMsgInterval"] > maxMsgTimeTriggerVal):
                     any_alarm = True
                     self._reboot_relay("REL_GATEWAY", "lastGatewayReboot", "gateway")
-                    self.msgStopEmuTimer = 0
 
                 if self.MsgTimers["serverPingInterval"] > maxMsgTimeTriggerVal:
                     any_alarm = True
                     self._reboot_relay("REL_SWITCH", "lastSwitchReboot", "switch")
-                    self.msgStopEmuTimer = 0
+                    
 
             out_lines["ERR_LED"].set_value(ON_STATE if any_alarm else OFF_STATE)
 
             time.sleep(0.5)
-            #print(f"{self.MsgTimers} / {self.msgStopEmuTimer}")
-            self.msgStopEmuTimer += 1
+            print(f"{self.MsgTimers}")
+            
 
     def _reboot_relay(self, relay_name: str, last_reboot_attr: str, label: str):
         now = time.time()
@@ -126,7 +124,7 @@ class Main():
         if now - getattr(self, last_reboot_attr) < REBOOT_COOLDOWN:
             return
         setattr(self, last_reboot_attr, now)
-        logger.warning(f"Reboot triggered: {label}. Activating {relay_name} for {REBOOT_DURATION}s")
+        logger.warning(f"Reboot triggered: {label}. Activating {relay_name} for {REBOOT_DURATION}s; Reason walue: {self.MsgTimers}")
 
         def do_reboot():
             out_lines[relay_name].set_value(ON_STATE)
@@ -149,8 +147,7 @@ class Main():
 
     def smartHomeGatewayUdpClient(self, can_message):
         #print(f"Received CAN message from Kotel Gateway: {can_message}")
-        if self.msgStopEmuTimer < 20:
-            self.gateway.canMsgParse(can_message)
+        self.gateway.canMsgParse(can_message)
         pass
 
     
