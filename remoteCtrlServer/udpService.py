@@ -20,6 +20,7 @@ class UdpAsyncClient:
         self.port = port
         self.bufferSize = bufferSize
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.listener_thread = None
         self.listening = False
