@@ -1,9 +1,11 @@
 import os
-import select  # Потрібно для неблокуючої перевірки кнопок
+import select 
 import time
 import json
+import socket
+import threading
+import logging
 import gpiod
-from evdev import InputDevice, ecodes
 from remoteCtrlServer.httpserver import start_server_in_thread
 from remoteCtrlServer.udpService import UdpAsyncClient
 from SH_DTO.gatewayDto import *
@@ -11,49 +13,43 @@ from SH_DTO.smartHomeUdpService import SmartHomeGatewayUdpClient
 from SH_DTO.onlineChecker import OnlineCheckerService
 
 
-gatewayKotelIP = "192.168.1.18"
-gatewayKotelTxPort = 4031
-gatewayKotelRxPort = 4030
+_hostname = socket.gethostname()
+_wd_conf_path = os.path.join(os.path.dirname(__file__), "sysConf", "wd_config.json")
+with open(_wd_conf_path) as _f:
+    _wd_conf = json.load(_f)[_hostname]
 
-maxMsgTimeTriggerVal = 10000 #milliseconds, if time between messages more than this value - trigger alert
+gatewayKotelIP       = _wd_conf["gateway_kotel_ip"]
+gatewayKotelTxPort   = _wd_conf["gateway_kotel_tx_port"]
+gatewayKotelRxPort   = _wd_conf["gateway_kotel_rx_port"]
+maxMsgTimeTriggerVal = _wd_conf["max_msg_time_trigger_ms"]
+REBOOT_DURATION      = _wd_conf["reboot_duration_sec"]
+REBOOT_COOLDOWN      = _wd_conf["reboot_cooldown_sec"]
+STARTUP_GRACE        = _wd_conf["startup_grace_sec"]
+_ONLINE_SERVERS      = _wd_conf["online_check_servers"]
 
-DEVICE_PATH = '/dev/input/by-path/platform-gpio-keys-event'
-BTN_0_CODE = 256
-BTN_1_CODE = 257
+os.makedirs("logs", exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s: %(message)s",
+    handlers=[
+        logging.FileHandler("logs/wd.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-dev = None
-try:
-    dev = InputDevice(DEVICE_PATH)
-except (PermissionError, FileNotFoundError) as e:
-    print(f"Попередження: Не вдалося відкрити кнопки ({e}). Запустіть від sudo.")
+
 
 ON_STATE = 0
 OFF_STATE = 1
 
-CHIP = "gpiochip2"
+CHIP = _wd_conf["chip"]
+OUTPUT_PINS = [(p["name"], p["offset"]) for p in _wd_conf["output_pins"]]
+INPUT_PINS  = [(p["name"], p["offset"]) for p in _wd_conf["input_pins"]]
 
-OUTPUT_PINS = [
-    ("PA0", 0),
-    ("PA1", 1),
-    ("PA2", 2),
-    ("PA3", 3),
-    ("PA4", 4),
-    ("PA5", 5),
-    ("PA6", 6),
-    ("ERR_LED", 7)
-]
-
-INPUT_PINS = [
-    ("PB0", 8),
-    ("PB1", 9),
-    ("PB2", 10),
-    ("PB3", 11),
-    ("PB4", 12),
-    ("PB5", 13),
-    ("PB6", 14),
-    ("PB7", 15)
-]
-
+# button presed pin state - 
+# in_lines['UNDEFINED_BTN'].get_value() == 0
+# in_lines['MAINTENANCE_BTN'].get_value() == 0
 
 chip = gpiod.Chip(CHIP)
 
@@ -61,7 +57,7 @@ out_lines = {name: chip.get_line(offset) for name, offset in OUTPUT_PINS}
 in_lines = {name: chip.get_line(offset) for name, offset in INPUT_PINS}
 
 for name, line in out_lines.items():
-    line.request(consumer=name, type=gpiod.LINE_REQ_DIR_OUT, default_vals=[0])
+    line.request(consumer=name, type=gpiod.LINE_REQ_DIR_OUT, default_vals=[1])
 
 for name, line in in_lines.items():
     line.request(
@@ -76,30 +72,69 @@ for name, line in in_lines.items():
 class Main():
     msgStopEmuTimer = 0
     def __init__(self):
+        self.lastGatewayReboot = 0.0
+        self.lastSwitchReboot = 0.0
+        self.startupTime = time.time()
+        self.maintenanceMode = False
+        
+
         self.energyMonitor = UdpAsyncClient(self)
         self.energyMonitor.startListener(5005, self.serverUdpIncomingData)
         self.gateway = GatewayDto()
         self.kotelGateway = SmartHomeGatewayUdpClient(cbFn=self.smartHomeGatewayUdpClient, gatewayIp=gatewayKotelIP, rxPort=gatewayKotelRxPort, txPort=gatewayKotelTxPort, bufferSize=1024)
         self.kotelGateway.startListener()
 
-        self._onlineChecker = OnlineCheckerService(gateway=self.gateway, servers=[{"192.168.1.5", "8.8.8.8"}])
-        
+        self._onlineChecker = OnlineCheckerService(gateway=self.gateway, servers=_ONLINE_SERVERS)
+
         while True:
+            # --- MAINTENANCE button (latching): pressed=0 -> maintenance ON ---
+            newMaintenanceMode = (in_lines["MAINTENANCE_BTN"].get_value() == 0)
+            if newMaintenanceMode != self.maintenanceMode:
+                self.maintenanceMode = newMaintenanceMode
+                mode_str = "ON" if self.maintenanceMode else "OFF"
+                logger.info(f"Maintenance mode {mode_str}")
+            out_lines["MAINTENANCE_LED"].set_value(ON_STATE if self.maintenanceMode else OFF_STATE)
+
+            # --- Alarm / reboot logic ---
             self.MsgTimers = self.gateway.getLastUpdateIntervals()
-            if self.MsgTimers["upsMsgInterval"] > maxMsgTimeTriggerVal or \
-                self.MsgTimers["waterTankMsgInterval"] > maxMsgTimeTriggerVal or \
-                self.MsgTimers["sensorUnitMsgInterval"] > maxMsgTimeTriggerVal or \
-                self.MsgTimers["kotelMsgInterval"] > maxMsgTimeTriggerVal:
-                
-                out_lines["ERR_LED"].set_value(ON_STATE)
-                time.sleep(0.5)
-                self.msgStopEmuTimer = 0
-            else:
-                out_lines["ERR_LED"].set_value(OFF_STATE)
-            
+            any_alarm = False
+
+            if not self.maintenanceMode:
+                if (self.MsgTimers["upsMsgInterval"] > maxMsgTimeTriggerVal or
+                        self.MsgTimers["waterTankMsgInterval"] > maxMsgTimeTriggerVal or
+                        self.MsgTimers["sensorUnitMsgInterval"] > maxMsgTimeTriggerVal or
+                        self.MsgTimers["kotelMsgInterval"] > maxMsgTimeTriggerVal):
+                    any_alarm = True
+                    self._reboot_relay("REL_GATEWAY", "lastGatewayReboot", "gateway")
+                    self.msgStopEmuTimer = 0
+
+                if self.MsgTimers["serverPingInterval"] > maxMsgTimeTriggerVal:
+                    any_alarm = True
+                    self._reboot_relay("REL_SWITCH", "lastSwitchReboot", "switch")
+                    self.msgStopEmuTimer = 0
+
+            out_lines["ERR_LED"].set_value(ON_STATE if any_alarm else OFF_STATE)
+
             time.sleep(0.5)
-            print(f"{self.gateway.getLastUpdateIntervals()} / {self.msgStopEmuTimer}")
+            #print(f"{self.MsgTimers} / {self.msgStopEmuTimer}")
             self.msgStopEmuTimer += 1
+
+    def _reboot_relay(self, relay_name: str, last_reboot_attr: str, label: str):
+        now = time.time()
+        if now - self.startupTime < STARTUP_GRACE:
+            return
+        if now - getattr(self, last_reboot_attr) < REBOOT_COOLDOWN:
+            return
+        setattr(self, last_reboot_attr, now)
+        logger.warning(f"Reboot triggered: {label}. Activating {relay_name} for {REBOOT_DURATION}s")
+
+        def do_reboot():
+            out_lines[relay_name].set_value(ON_STATE)
+            time.sleep(REBOOT_DURATION)
+            out_lines[relay_name].set_value(OFF_STATE)
+            logger.info(f"Reboot of {label} complete ({relay_name})")
+
+        threading.Thread(target=do_reboot, daemon=True).start()
     
     def serverUdpIncomingData(self, data):
         """Handle incoming Power Meter UDP data"""
@@ -125,9 +160,10 @@ class Main():
 if __name__ == "__main__":
     #KeyboardInterrupt для коректного завершення програми при натисканні Ctrl+C
     try:
+        logger.info("Starting Watchdog Service...")
         Main()
     except KeyboardInterrupt:
-        print("Ending program...")
+        logger.info("Ending Watchdog Service...")
         #release all lines on exit and set to High all outputs
         for line in out_lines.values():
             line.set_value(1)

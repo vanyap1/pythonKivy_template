@@ -1,0 +1,51 @@
+{
+    "orangepipc": {
+        "gateway_kotel_ip":           "192.168.1.18",
+        "gateway_kotel_tx_port":      4031,
+        "gateway_kotel_rx_port":      4030,
+        "max_msg_time_trigger_ms":    180000,
+        "reboot_duration_sec":        3,
+        "reboot_cooldown_sec":        60,
+        "startup_grace_sec":          60,
+        "online_check_servers":       ["192.168.1.1", "8.8.8.8"],
+        "chip": "gpiochip2",
+        "output_pins": [
+            {"name": "REL_GATEWAY",     "offset": 8,  "description": "Relay - cuts gateway power when ON"},
+            {"name": "REL_SWITCH",      "offset": 9,  "description": "Relay - cuts network switch power when ON"},
+            {"name": "REL3",            "offset": 10, "description": "Relay 3 - reserved"},
+            {"name": "REL4",            "offset": 11, "description": "Relay 4 - reserved"},
+            {"name": "MAINTENANCE_LED", "offset": 12, "description": "Maintenance button backlight"},
+            {"name": "UNDEFINED_LED",   "offset": 13, "description": "Undefined LED"},
+            {"name": "PA6",             "offset": 14, "description": "PA6 - reserved"},
+            {"name": "ERR_LED",         "offset": 15, "description": "Error indicator LED"}
+        ],
+        "input_pins": [
+            {"name": "MAINTENANCE_BTN", "offset": 0, "description": "Latching maintenance button - disables all alarm reactions"},
+            {"name": "UNDEFINED_BTN",   "offset": 1, "description": "Undefined button - reserved"},
+            {"name": "PB2",             "offset": 2, "description": "PB2 - reserved"},
+            {"name": "PB3",             "offset": 3, "description": "PB3 - reserved"},
+            {"name": "PB4",             "offset": 4, "description": "PB4 - reserved"},
+            {"name": "PB5",             "offset": 5, "description": "PB5 - reserved"},
+            {"name": "PB6",             "offset": 6, "description": "PB6 - reserved"},
+            {"name": "PB7",             "offset": 7, "description": "PB7 - reserved"}
+        ]
+    },
+    "sample-host": {
+        "gateway_kotel_ip":           "192.168.1.50",
+        "gateway_kotel_tx_port":      4031,
+        "gateway_kotel_rx_port":      4030,
+        "max_msg_time_trigger_ms":    60000,
+        "reboot_duration_sec":        3,
+        "reboot_cooldown_sec":        120,
+        "startup_grace_sec":          90,
+        "online_check_servers":       ["192.168.1.1", "8.8.8.8"],
+        "chip": "gpiochip0",
+        "output_pins": [
+            {"name": "REL_GATEWAY",     "offset": 0, "description": "Relay - cuts gateway power when ON"},
+            {"name": "ERR_LED",         "offset": 1, "description": "Error indicator LED"}
+        ],
+        "input_pins": [
+            {"name": "MAINTENANCE_BTN", "offset": 2, "description": "Latching maintenance button - disables all alarm reactions"}
+        ]
+    }
+}
